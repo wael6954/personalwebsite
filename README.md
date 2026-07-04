@@ -1,83 +1,67 @@
-# Transit World — Low-Poly (Bruno-Simon-inspired) Kit
+# Transit World
 
-A playful, flat-color low-poly transit world, built in Blender for a navigable three.js
-portfolio scene. **Y-up**, **1 unit = 1 metre**. No textures — all color is in the GLB
-materials (baseColor factors), so the whole thing is tiny.
+An interactive 3D portfolio for Wael Halabi, built as a low-poly transit town you scroll through. It's a single static page that loads a hand-modeled Blender world into a three.js scene and then rides you around it on rails. No build step, no framework. Open the page and it runs.
 
-## Files
+Everything is flat-color low-poly geometry with the color baked into the GLB materials, so the assets stay small. One unit is one metre, and the exported models are Y-up.
 
-| File | What | Size |
-|------|------|------|
-| `tram.glb` | The chunky low-poly streetcar (hero) | 28 KB |
-| `world.glb` | **Circular "roundabout town":** a ring road + tram track with detailed buildings arranged *around* it facing center — gabled townhouses (dormers, chimneys, bay windows, storefronts, awnings), a **church landmark** (tower, spire, clock, stained glass) and a **brick apartment mid-rise** (balconies, rooftop tank). Center holds a **park with a pond + fountain**, benches, and **four labeled section signs** (About / Projects / Experience / Résumé) at the park's four corners. Grass tufts + textured ground, trees ringing the park, streetlights, bushes | 2.3 MB |
-| `sky.glb` | Stylized puffy clouds + a bird flock (keep separate so you can drift/animate them in the web app) | 27 KB |
-| `name.glb` | "WAEL HALABI" 3D letters — the web app floats these high in the sky and billboards them to face the camera (hidden in aerial view) | 31 KB |
-| `Wael_Halabi_Resume.pdf` | Résumé PDF — linked by the "Download résumé" button in the Résumé section | 81 KB |
-| `index.html` + `main.js` | **The scrollytelling portfolio web app** — grounded island (sea + mountains), roundabout town, tram rides the ring, orbit landing → damped scrolljack tour, section content panels, soft shadows | — |
+## What's in here
 
-### How the portfolio works (`main.js`)
+| File | What it is |
+|---|---|
+| `index.html` + `main.js` | The web app. Scene setup, the scrolljack tour, animations, sound, and all the UI live here. |
+| `simple.html` | A plain-HTML version of the whole portfolio. It loads automatically when the browser has no WebGL or JavaScript is off, and there's a "Simple version" link in the corner. |
+| `world.glb` | The town. Ring road and tram track, buildings facing a central park with a pond, a walled fountain, four labeled section signs, trees, streetlamps, ducks, townsfolk, a dock, and a small fleet of sailboats out on the sea. |
+| `tram.glb` | The red streetcar. It rides the ring and eases to a stop at the shelter each lap. |
+| `sky.glb` | Clouds and a bird flock that drift above the town. |
+| `name.glb` | The 3D "WAEL HALABI" letters that float in the sky and turn to face the camera. |
+| `statement.glb`, `contact.glb` | The red 3D sky text for the landing tagline and the Contact overview. |
+| `favicon.svg`, `og.jpg` | The site icon (a little streetcar) and the social-share card. |
+| `Wael_Halabi_Resume.pdf` | The résumé, opened in an in-page viewer or downloaded from the Résumé section. |
+| `transit_world.blend` | The Blender source for everything above. Renders crash this file, so it was built and checked with viewport screenshots and the live preview. |
 
-The world sits on a **grass island in a sea, ringed by low-poly mountains**. The experience is a **cinematic scrolljack**, not free navigation:
+## How it works
 
-- **Landing = slow auto-orbit.** The name floats in the sky. An **Aerial view** button (top-down) is offered *only here*; scrolling in dismisses it.
-- **First scroll wakes the streetcar** and hands off to a **damped, section-based** tour. Scroll back to the top and orbit resumes.
-- **Each sign is a section.** The camera eases to a beat facing each sign and its content panel fades in: About, Projects, Experience, Résumé. The panels scroll internally, and the tour only eases to the next sign once you scroll **past the end** of the current panel (so you can read without jumping). The final **Contact** beat is a high overview of the whole city with the name in the sky.
-- Input: wheel / trackpad, touch-drag, arrow / PageUp-Down / Space (jump sections), and the right-side nav dots (click a section). A `prefers-reduced-motion` / mobile fallback tightens the damping and keeps the nav dots for jumping.
+You land in a slow auto-orbit with the name floating overhead. From here you can pop into an aerial view, which is a top-down TTC-style route map where each section sign becomes a labeled station you can click to jump to.
 
-Tune the tour by editing the `STOPS` array (camera `pos` + `look` per beat) in `main.js`.
-All section copy lives in `index.html` (the `.panel` blocks).
+The first scroll wakes the streetcar and hands you off to a damped, section-by-section tour. Each of the four signs (About, Projects, Experience, Résumé) is a stop. The camera eases to face the sign, its content panel fades in, and the panel scrolls on its own. You only move to the next stop once you've scrolled past the end of the current panel, so nothing jumps while you're reading. The final beat is a high overview of the whole island for Contact, with the name back in the sky. Scroll to the top and the orbit resumes.
 
-## ▶ Run the web app
+Drive it with the wheel or trackpad, a touch drag on mobile, the arrow keys, Page Up and Page Down, or Space. The nav dots on the right jump straight to any section. A reduced-motion and mobile fallback tightens the damping and keeps the dots.
 
-The GLBs must be served over HTTP (not `file://`). From this folder:
+## The small stuff
+
+A few things reward poking around.
+
+The town is alive. Chimneys puff smoke, leaves drift through the park, ducks paddle the pond, and townsfolk stand around the grass with one out on the dock. Sailboats bob on the horizon, and the streetcar dings as it pulls into its stop.
+
+Most of it is clickable. Tap the streetcar for a bell and a little hop, tap a tree for a squash-and-bounce, tap the fountain for a splash, or tap the church to ring the bell and scatter the birds. All the sound is synthesized in the browser with WebAudio, and a mute button in the corner remembers your choice.
+
+There's a day/night toggle too. Flip it and the sky turns to dusk, stars and a moon fade in, the streetlamps and windows glow warm, and the fountain lights up. It also remembers your preference between visits.
+
+The Résumé section has a "View résumé" button that opens the PDF in an in-page viewer, with a download button next to it.
+
+## Run it locally
+
+The GLBs need to be served over HTTP, not opened from `file://`. From this folder, start a static server.
 
 ```bash
-py -m http.server 8000        # or: npx serve
+py -m http.server 8000
+# or: npx serve
 ```
 
-Then open **http://localhost:8000** and scroll. three.js + loaders come from a CDN (import
-map in `index.html`), and the Draco decoder from Google's CDN — so it needs internet at
-runtime. To embed in your React/Vite site, port `main.js` into a component and
-`npm install three` (see notes at the bottom).
+Then open http://localhost:8000. three.js and its loaders come from a CDN via the import map in `index.html`, and the Draco decoder comes from Google's CDN, so it needs internet access at runtime.
 
-> **Note:** GLBs are cache-busted with `?v=Date.now()`; `main.js` is versioned (`?v=2` in
-> `index.html`). After editing `main.js`, bump that number (or hard-reload) so the browser
-> fetches the new module instead of a cached copy.
+One caching note. The GLBs cache-bust with `?v=Date.now()`, but `main.js` is pinned with a version query (`?v=30` right now) in `index.html`. If you edit `main.js`, bump that number or hard-reload so the browser fetches the new file instead of a cached copy.
 
-The tram is a **separate file** on purpose — in the web app it's the moving/hero object,
-while `world.glb` is the static environment. The tram sits at the origin on the rails (its
-length runs along **X**); the main road runs along X and a cross road along the other
-horizontal axis.
+## Editing content and tuning the tour
 
-## Art style
+All the section copy lives in `index.html` inside the `.panel` blocks, so you can rewrite the About, Projects, Experience, and Résumé text without touching the scene code. The camera stops are the `STOPS` array in `main.js`, each with a `pos` and a `look`, if you want to re-aim a beat.
 
-- Flat solid colors, chunky beveled shapes, big round wheels — deliberately toy-like.
-- Palette: TTC-red tram, cream trim, bright building colors (blue/orange/teal/yellow/pink/green),
-  green ground, dark roads. The "WAEL HALABI" letters are red.
-- Everything is original geometry — **no attribution required** (unlike the photoreal kit).
+Fonts are Montserrat for headings and labels, and Proxima Nova for body with Montserrat as the fallback. Proxima Nova is a commercial Adobe font, so it needs your own Adobe Fonts kit to actually load. There's a commented placeholder for that kit in the head of both HTML files, and until you add it, everything renders in Montserrat.
 
-## Building the web app later (not done yet — this was scoped to models only)
+## Built with
 
-The plan for the navigable three.js scene:
+Plain three.js (r0.160) over a CDN import map, GLTFLoader and DRACOLoader for the Draco-compressed GLBs, and WebAudio for the sound. No bundler, no framework. The geometry is all original work made in Blender, so nothing here needs attribution.
 
-1. **Load** `world.glb` once (static) and `tram.glb` (the hero) with `GLTFLoader` (+ `DRACOLoader`,
-   decoder from `gstatic.com/draco/v1/decoders/` — both are Draco-compressed).
-2. **Shading for the Bruno look:** either keep the flat materials with soft lighting, or swap
-   meshes to `MeshToonMaterial` for a cel-shaded feel. Add one soft directional light + a
-   hemisphere fill, and a soft contact/blob shadow under the tram.
-3. **Navigable camera — follow the ring, don't go straight.** The town is a **circle** (ring
-   road centerline radius ≈ 17m, buildings around radius ≈ 24m, central park/pond at the
-   origin). Drive the camera along a **circular / `CatmullRom` loop path** so navigation
-   *winds around* the town (matching the feel of the transit-map site), easing to a stop at
-   each project board (they sit at radius ≈ 12.5m at ~40°, 160°, 280°). Point the camera
-   inward/along the ring; `OrbitControls` with damping for free look between stops.
-4. **Interactivity:** raycast the 3 `Board_*` panels and the `Name_WaelHalabi` letters so
-   clicking them opens a project / section.
-5. Optional later: gently drift the tram along the rails, add the drivable physics (Rapier)
-   if you ever want the full Bruno driving experience.
+## Deploying
 
-## Note on previews
-
-Full Cycles/Eevee **renders were crashing this Blender session**, so the build was previewed
-with viewport screenshots rather than beauty renders. The real visual polish (toon shading,
-shadows, sky) happens in the three.js app anyway.
+It's a static site, so any static host works. Point the host at this folder and serve `index.html`. GitHub Pages, Netlify, Vercel as a static project, or Cloudflare Pages all handle it with no build command. The only runtime dependency is internet access for the three.js and Draco CDNs.
