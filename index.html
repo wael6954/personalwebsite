@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wael Halabi</title>
+  <meta name="description" content="Wael Halabi is a civil engineering student at the University of Toronto working in transportation, analytics, and machine learning. Explore an interactive 3D transit world portfolio." />
+  <meta property="og:title" content="Wael Halabi | Transit World" />
+  <meta property="og:description" content="Civil engineering student at the University of Toronto. Transportation, analytics, and machine learning, presented as an interactive 3D transit world." />
+  <meta property="og:image" content="og.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Wael Halabi | Transit World" />
+  <meta name="twitter:description" content="Civil engineering student at the University of Toronto. Transportation, analytics, and machine learning, presented as an interactive 3D transit world." />
+  <meta name="twitter:image" content="og.jpg" />
+  <meta name="theme-color" content="#bfe3f2" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+  <!-- Proxima Nova is a commercial Adobe font (not on Google Fonts). Body text
+       falls back to Montserrat until you add your own Adobe Fonts (Typekit) kit:
+  <link rel="stylesheet" href="https://use.typekit.net/YOUR_KIT_ID.css"> -->
+  <style>
+    :root {
+      --sky: #bfe3f2;
+      --ink: #22303f;
+      --ink-soft: #55636f;
+      --paper: #ffffff;
+      --line: #e7ebef;
+      --about: #2f7ca8;
+      --projects: #d9722f;
+      --experience: #3f9457;
+      --resume: #7a5fa8;
+      --contact: #b5432f;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: var(--sky);
+      font-family: 'Proxima Nova', 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); }
+    #app { position: fixed; inset: 0; }
+
+    #loading { position: fixed; inset: 0; display: flex; flex-direction: column; gap: 14px;
+      align-items: center; justify-content: center; background: var(--sky); color: var(--ink);
+      z-index: 50; transition: opacity .7s ease; }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    .load-name { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 30px;
+      letter-spacing: .02em; color: var(--contact); }
+    .load-sub { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .24em;
+      text-transform: uppercase; color: var(--ink-soft); }
+    #load-bar { width: 220px; height: 3px; background: rgba(34,48,63,.15); border-radius: 2px;
+      overflow: hidden; margin-top: 8px; }
+    #load-fill { width: 0%; height: 100%; background: var(--contact); border-radius: 2px;
+      transition: width .25s ease; }
+    #load-pct { font-family: 'Montserrat', sans-serif; font-size: 12px; color: var(--ink-soft); }
+
+    /* HERO */
+    #hero { position: fixed; top: 0; left: 0; right: 0; padding: 44px 52px; z-index: 10;
+      color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.45); pointer-events: none; }
+    #hero .kicker { display:inline-flex; align-items:center; gap:8px; font-family:'Proxima Nova','Montserrat',sans-serif;
+      font-size: 12px; font-weight: 600; letter-spacing:.22em; text-transform: uppercase;
+      background: var(--contact); padding: 6px 14px; border-radius: 4px; margin-bottom: 16px; text-shadow:none; }
+    #hero h1 { font-family:'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: clamp(34px, 6.5vw, 68px);
+      line-height: .98; letter-spacing: -.02em; }
+    #hero p { font-size: clamp(13px, 1.6vw, 18px); font-weight: 500; margin-top: 10px; opacity: .96; max-width: 640px; line-height: 1.45; }
+
+    /* AERIAL button */
+    #aerial-btn { position: fixed; top: 46px; right: 48px; z-index: 12; pointer-events: auto;
+      font-family:'Proxima Nova','Montserrat',sans-serif; font-weight:600; font-size: 13px; letter-spacing:.06em; text-transform:uppercase;
+      color: var(--ink); background: #fff; border: none; cursor: pointer;
+      padding: 11px 18px; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.2);
+      transition: opacity .4s ease, transform .15s ease; display:flex; align-items:center; gap:9px; }
+    #aerial-btn:hover { transform: translateY(-1px); }
+    #aerial-btn.active { background: var(--ink); color: #fff; }
+    #aerial-btn.gone { opacity: 0; pointer-events: none; }
+
+    /* INFO button: floats above the current sign, pulses to draw attention */
+    #info-btn { position: fixed; z-index: 11; width: 46px; height: 46px; border-radius: 50%;
+      transform: translate(-50%, -50%); background: var(--paper); color: var(--ink);
+      border: none; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.28), 0 0 0 4px rgba(255,255,255,.35);
+      font-family:'Montserrat', -apple-system, sans-serif; font-weight: 500; font-style: italic; font-size: 22px;
+      display: grid; place-items: center; line-height: 1; padding: 0;
+      transition: opacity .3s ease, transform .12s ease, box-shadow .2s ease;
+      animation: pulse 2s ease-in-out infinite; }
+    #info-btn:hover { transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 0 6px rgba(255,255,255,.45); }
+    #info-btn.gone { opacity: 0; pointer-events: none; animation: none; }
+
+    /* MUTE + DAY/NIGHT toggles + simple-version link */
+    #mute-btn { position: fixed; bottom: 20px; right: 22px; z-index: 12; width: 42px; height: 42px;
+      border-radius: 50%; border: none; background: #fff; cursor: pointer; font-size: 16px;
+      display: grid; place-items: center; box-shadow: 0 4px 14px rgba(0,0,0,.16);
+      transition: transform .15s ease; }
+    #mute-btn:hover { transform: scale(1.08); }
+    #day-btn { position: fixed; bottom: 70px; right: 22px; z-index: 12; width: 42px; height: 42px;
+      border-radius: 50%; border: none; background: #fff; cursor: pointer; font-size: 16px;
+      display: grid; place-items: center; box-shadow: 0 4px 14px rgba(0,0,0,.16);
+      transition: transform .15s ease; }
+    #day-btn:hover { transform: scale(1.08) rotate(-12deg); }
+    #simple-link { position: fixed; bottom: 28px; left: 22px; z-index: 12;
+      font-family: 'Montserrat', sans-serif; font-size: 10.5px; letter-spacing: .1em;
+      text-transform: uppercase; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.45);
+      text-decoration: none; opacity: .7; transition: opacity .2s ease; }
+    #simple-link:hover { opacity: 1; text-decoration: underline; }
+
+    /* TRANSIT MAP overlay (aerial view): TTC-style route map projected on the world */
+    #transit-map { position: fixed; inset: 0; z-index: 12; pointer-events: none;
+      opacity: 0; transition: opacity .55s ease; }
+    #transit-map.on { opacity: 1; }
+    .tm-loop { fill: none; stroke: #b5432f; stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+    .tm-spoke { stroke: rgba(181,67,47,.55); stroke-width: 3; stroke-dasharray: 1.5 7; stroke-linecap: round; }
+    .tm-station { pointer-events: none; cursor: pointer; }
+    #transit-map.on .tm-station { pointer-events: auto; }
+    .tm-dot { fill: #fff; stroke: #b5432f; stroke-width: 4; transition: fill .15s ease; }
+    .tm-station:hover .tm-dot { fill: #ffe7c2; }
+    .tm-label { fill: #fff; font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-weight: 700; font-size: 15px;
+      letter-spacing: .02em; paint-order: stroke; stroke: rgba(18,26,40,.62); stroke-width: 4px; }
+    .tm-title { fill: #fff; font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 22px;
+      paint-order: stroke; stroke: rgba(18,26,40,.55); stroke-width: 5px; }
+
+    /* 3D contact clickable overlays: transparent boxes positioned each frame */
+    #contact3d { position: fixed; inset: 0; z-index: 11; pointer-events: none; }
+    #contact3d a { position: absolute; height: 44px; display: block;
+      cursor: pointer; pointer-events: auto; border-radius: 6px;
+      background: rgba(181, 67, 47, 0); transition: background .2s ease, transform .12s ease; }
+    #contact3d a:hover { background: rgba(181, 67, 47, 0.18); transform: scale(1.05); }
+    #contact3d.gone { display: none; }
+    #info-btn span { display: block; margin-top: -2px; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,.28), 0 0 0 4px rgba(255,255,255,.35), 0 0 0 8px rgba(255,255,255,0); }
+      50%      { box-shadow: 0 6px 20px rgba(0,0,0,.28), 0 0 0 4px rgba(255,255,255,.45), 0 0 0 18px rgba(255,255,255,0); }
+    }
+
+    /* PANELS: translucent editorial card. Montserrat headings + labels, Proxima Nova (→ Montserrat) body. */
+    #panels { position: fixed; inset: 0; z-index: 8; pointer-events: none; }
+    .panel { position: absolute; left: 52px; bottom: 56px; width: min(440px, 42vw);
+      max-height: 76vh; background: rgba(255, 255, 255, 0.62);
+      backdrop-filter: blur(18px) saturate(1.08); -webkit-backdrop-filter: blur(18px) saturate(1.08);
+      border: 0.5px solid rgba(255, 255, 255, 0.55); border-radius: 6px;
+      box-shadow: 0 22px 60px rgba(10, 20, 35, 0.22);
+      color: var(--ink); display: flex; flex-direction: column; overflow: hidden;
+      opacity: 0; transform: translateY(18px); pointer-events: none;
+      transition: opacity .4s ease, transform .4s ease; }
+    .panel.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    /* thin accent stripe across the top edge of the card */
+    .panel::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--accent, var(--ink)); }
+
+    .panel-scroll { position: relative; overflow-y: auto; padding: 26px 26px 28px;
+      max-height: 76vh; overscroll-behavior: contain;
+      scrollbar-width: thin; scrollbar-color: rgba(22,33,43,.28) transparent; }
+    .panel-scroll::-webkit-scrollbar { width: 5px; }
+    .panel-scroll::-webkit-scrollbar-thumb { background: rgba(22,33,43,.28); border-radius: 3px; }
+
+    .panel .eyebrow { display: inline-block; font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--accent, var(--ink)); margin: 0 0 10px; }
+
+    .panel h2 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 400; font-size: 32px;
+      letter-spacing: -0.02em; line-height: 1.02; color: var(--ink); margin: 0 0 16px;
+      font-variation-settings: "opsz" 32, "SOFT" 60; }
+
+    .panel p { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 14px;
+      line-height: 1.66; color: var(--ink-soft); margin-bottom: 11px; }
+    .panel strong { color: var(--ink); font-weight: 500; }
+
+    .intro { font-family: 'Montserrat', -apple-system, sans-serif !important; font-size: 17px !important;
+      font-weight: 400 !important; line-height: 1.42 !important; color: var(--ink) !important;
+      margin-bottom: 18px !important; font-variation-settings: "opsz" 17, "SOFT" 40; }
+
+    .stat-row { display:flex; flex-wrap:wrap; gap: 6px; margin-top: 14px; }
+    .chip { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500;
+      background: rgba(22,33,43,.06); color: var(--ink); padding: 4px 10px; border-radius: 2px;
+      letter-spacing: .02em; }
+
+    .item { padding: 15px 0; border-top: 0.5px solid rgba(22, 33, 43, 0.15); }
+    .item:first-of-type { border-top: none; padding-top: 4px; }
+    .item h3 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 18px;
+      line-height: 1.15; color: var(--ink); margin-bottom: 4px; letter-spacing: -.01em;
+      font-variation-settings: "opsz" 18, "SOFT" 40; }
+    .item .meta { font-family: 'Montserrat', sans-serif; font-size: 10.5px; font-weight: 500;
+      letter-spacing: .14em; color: var(--accent, var(--ink)); text-transform: uppercase; margin-bottom: 8px; }
+    .item .org { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 13.5px; font-weight: 500; color: var(--ink); }
+    .item .dates { font-family: 'Montserrat', sans-serif; font-size: 11.5px;
+      color: var(--ink-soft); margin: 2px 0 8px; }
+    .item p { font-size: 13px; margin-bottom: 8px; }
+    .item ul { list-style: none; display: flex; flex-direction: column; gap: 5px; margin: 4px 0 2px; }
+    .item li { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 12.5px; line-height: 1.55;
+      color: var(--ink-soft); padding-left: 14px; position: relative; }
+    .item li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 1px;
+      background: var(--accent, var(--ink)); }
+    .item a.read { display: inline-block; margin-top: 4px; color: var(--accent, var(--ink));
+      font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: .04em;
+      text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+    .item a.read:hover { opacity: .65; }
+
+    .skillgroup { margin-bottom: 14px; }
+    .skillgroup h4 { font-family: 'Montserrat', sans-serif; font-size: 10.5px; font-weight: 500;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 7px; }
+    .tags { display:flex; flex-wrap:wrap; gap: 5px; }
+    .tag { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 500;
+      background: rgba(22,33,43,.06); color: var(--ink); padding: 4px 9px; border-radius: 2px; }
+    .awards-list { display: flex; flex-direction: column; gap: 6px; }
+    .awards-list div { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 13px; color: var(--ink); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+      font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: .01em;
+      color: #fff; background: var(--accent, var(--ink)); padding: 10px 18px; border-radius: 3px;
+      text-decoration: none; border: none; cursor: pointer; transition: transform .15s ease, filter .15s ease; }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .resume-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .resume-actions .btn { margin-top: 14px; }
+    .btn.btn-outline { background: transparent; color: var(--accent, var(--ink));
+      box-shadow: inset 0 0 0 1.5px var(--accent, var(--ink)); }
+    .btn.btn-outline:hover { background: rgba(122, 95, 168, .1); filter: none; }
+
+    /* Résumé PDF viewer modal */
+    #pdf-modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; }
+    #pdf-modal.gone { display: none; }
+    #pdf-modal .pdf-backdrop { position: absolute; inset: 0; background: rgba(15, 22, 30, .62);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    #pdf-modal .pdf-frame-wrap { position: relative; z-index: 1; display: flex; flex-direction: column;
+      width: min(920px, 94vw); height: min(92vh, 1180px); background: #fff; border-radius: 10px;
+      overflow: hidden; box-shadow: 0 30px 90px rgba(10, 20, 35, .45); }
+    #pdf-modal .pdf-bar { display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px 10px 16px; background: var(--ink); color: #fff; flex-shrink: 0; }
+    #pdf-modal .pdf-bar span { font-family: 'Montserrat', sans-serif; font-size: 11.5px;
+      letter-spacing: .12em; text-transform: uppercase; }
+    #pdf-close { width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(255, 255, 255, .15); color: #fff; font-size: 13px; display: grid; place-items: center;
+      transition: background .15s ease; }
+    #pdf-close:hover { background: rgba(255, 255, 255, .32); }
+    #pdf-frame { flex: 1; width: 100%; border: none; background: #f4f4f2; }
+    @media (max-width: 720px) { #pdf-modal .pdf-frame-wrap { width: 96vw; height: 88vh; } }
+
+    /* CLOSE button — small dark dot at the top-right of the panel */
+    .panel-close { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
+      border-radius: 50%; border: none; background: rgba(22,33,43,.75); color: #fff;
+      font-size: 11px; cursor: pointer; display: grid; place-items: center;
+      line-height: 1; z-index: 3; transition: background .15s ease, transform .12s ease; }
+    .panel-close:hover { background: rgba(22,33,43,1); transform: scale(1.1); }
+
+    /* Narrow viewports: slightly more opaque so text stays readable on small screens */
+    @media (max-width: 720px) {
+      .panel { left: 12px; right: 12px; bottom: 14px; width: auto; max-height: 62vh;
+        background: rgba(255,255,255,.82); }
+      .panel-scroll { padding: 22px 20px 24px; max-height: calc(62vh - 3px); }
+      .panel h2 { font-size: 26px; }
+      .intro { font-size: 15px !important; }
+    }
+    .links { display:flex; flex-direction:column; gap: 9px; margin-top: 14px; }
+    .links a { display:flex; align-items:center; gap: 13px; text-decoration: none; color: var(--ink);
+      background: #f5f7f8; padding: 12px 15px; border-radius: 9px; border-left: 3px solid var(--accent, var(--ink));
+      transition: transform .15s ease, background .15s ease; }
+    .links a:hover { transform: translateX(4px); background: #eef1f3; }
+    .links .lbl { font-size: 10.5px; font-weight: 700; letter-spacing:.1em; text-transform:uppercase; color: var(--ink-soft); }
+    .links .val { font-size: 13.5px; font-weight: 600; }
+    .links .ic { width: 34px; height: 34px; display:grid; place-items:center; border-radius: 8px;
+      background: var(--accent, var(--ink)); color: #fff; font-family:'Proxima Nova','Montserrat',sans-serif; font-weight: 700; font-size: 14px; flex-shrink:0; }
+
+    /* NAV dots */
+    #nav { position: fixed; right: 28px; top: 50%; transform: translateY(-50%); z-index: 11;
+      display: flex; flex-direction: column; gap: 16px; align-items: flex-end; }
+    #nav button { display:flex; align-items:center; gap: 11px; background: none; border: none;
+      cursor: pointer; color: #fff; font-family:'Proxima Nova','Montserrat',sans-serif; font-size: 12px; font-weight: 600;
+      text-shadow: 0 1px 8px rgba(0,0,0,.5); opacity: .55; transition: opacity .25s ease; }
+    #nav button:hover { opacity: 1; }
+    #nav button .dot { width: 10px; height: 10px; border-radius: 3px; background: rgba(255,255,255,.55);
+      border: 2px solid rgba(255,255,255,.9); transition: all .25s ease; flex-shrink: 0; }
+    #nav button.on { opacity: 1; }
+    #nav button.on .dot { background: var(--contact); border-color: #fff; transform: scale(1.4) rotate(45deg); }
+    #nav button .txt { opacity: 0; transform: translateX(6px); transition: all .25s ease; }
+    #nav button:hover .txt, #nav button.on .txt { opacity: 1; transform: translateX(0); }
+
+    #hint { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      background: #fff; color: var(--ink); padding: 9px 18px; border-radius: 6px;
+      font-family:'Proxima Nova','Montserrat',sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing:.04em; z-index: 9;
+      box-shadow: 0 4px 14px rgba(0,0,0,.16); transition: opacity .5s ease; display:flex; align-items:center; gap: 9px; }
+    #hint.gone { opacity: 0; pointer-events: none; }
+    #hint .arrow { display:inline-block; animation: bob 1.4s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(4px);} }
+
+    @media (max-width: 720px) {
+      #hero { padding: 26px 22px; }
+      .panel { left: 12px; right: 12px; bottom: 14px; width: auto; max-height: 58vh; }
+      #aerial-btn { top: 20px; right: 16px; }
+      #nav { right: 12px; gap: 13px; }
+      #nav button .txt { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <button id="aerial-btn"><span>◳</span> Aerial view</button>
+
+  <button id="info-btn" aria-label="Open section"><span>i</span></button>
+
+  <button id="day-btn" aria-label="Switch to night">🌙</button>
+  <button id="mute-btn" aria-label="Mute sound">🔊</button>
+  <a id="simple-link" href="./simple.html">Simple version</a>
+
+  <nav id="nav"></nav>
+
+  <div id="hint"><span>Scroll to explore</span><span class="arrow">↓</span></div>
+
+  <div id="panels">
+
+    <!-- ABOUT -->
+    <section class="panel" data-beat="1" style="--accent: var(--about);">
+      <div class="panel-scroll">
+        <span class="eyebrow">About</span>
+        <h2>About me</h2>
+        <p class="intro">I'm interested in solving transportation problems at the intersection of engineering, analytics, and technology.</p>
+        <p>At the <strong>City of Toronto</strong>, I've worked on projects ranging from <strong>FIFA World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work has supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
+        <p>What I enjoy most are problems where the answer isn't obvious from the data alone: understanding congestion, improving transit reliability, estimating travel demand, or evaluating policy. I like combining engineering judgment with analytical tools to help cities make better decisions.</p>
+        <p>Outside of engineering, I'm usually building side projects, exploring new tech, or playing sports.</p>
+        <div class="stat-row">
+          <span class="chip">B.A.Sc. Civil Eng. (Honours) '27</span>
+          <span class="chip">CGPA 3.50</span>
+          <span class="chip">Dean's List ×3</span>
+          <span class="chip">English / Arabic</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="panel" data-beat="2" style="--accent: var(--projects);">
+      <div class="panel-scroll">
+        <span class="eyebrow">Projects</span>
+        <h2>Featured work</h2>
+        <p class="intro">Engineering solutions for transportation, infrastructure, and healthcare.</p>
+        <div class="item">
+          <h3>Automated Speed Enforcement Evaluation</h3>
+          <div class="meta">2026 · Python · SQL · Transportation Analytics</div>
+          <p>Designed and deployed an automated system evaluating the impacts of ASE camera removals across Toronto. Built scalable analytics pipelines on city-wide traffic data to monitor roadway performance and support policy evaluation. The analyses informed <strong>City Council</strong> reporting and were discussed publicly by the <strong>Mayor</strong>.</p>
+        </div>
+        <div class="item">
+          <h3>FIFA World Cup Congestion Monitoring</h3>
+          <div class="meta">2026 · Python · SQL · Geospatial</div>
+          <p>Developed automated congestion monitoring workflows supporting the <strong>City of Toronto</strong>'s transportation planning for the <strong>FIFA World Cup</strong>. Built repeatable Python and SQL pipelines to monitor network performance, identify congestion trends, and generate operational insights.</p>
+        </div>
+        <div class="item">
+          <h3>Predicting Streetcar Delays in Toronto</h3>
+          <div class="meta">2025 · Python · Machine Learning</div>
+          <p>Built ML models on <strong>over ten years</strong> of TTC streetcar delay data. Random Forest models reached <strong>R² up to 0.98</strong> and <strong>MAE as low as 0.73 min</strong>, showing how historical transit data can improve operational planning.</p>
+          <a class="read" href="https://wael-halabi.medium.com/predicting-streetcar-delays-in-toronto-using-historical-data-and-machine-learning-844cce83a09a" target="_blank" rel="noopener">Read the write-up ↗</a>
+        </div>
+        <div class="item">
+          <h3>City-Wide Bicycle Demand Estimation</h3>
+          <div class="meta">2025 · Python · SQL · PostgreSQL</div>
+          <p>A city-scale pipeline for <strong>Annual Average Daily Bicycle Traffic (AADT)</strong>, combining temporal normalization, seasonal adjustment, and confidence interval estimation to support cycling infrastructure planning.</p>
+        </div>
+        <div class="item">
+          <h3>Accessibility Modeling for Planning</h3>
+          <div class="meta">2025 · R · QGIS</div>
+          <p>Reproducible geospatial workflows computing gravity-based and cumulative accessibility measures across transportation networks, with GIS visualizations supporting planning and accessibility analysis.</p>
+        </div>
+        <div class="item">
+          <h3>ShiftED, Dynamic Triage Monitoring</h3>
+          <div class="meta">2026 · AI/ML · Healthcare · 🏆 Hackathon Winner</div>
+          <p><strong>Winner of the AI × Bio Hackathon.</strong> An AI-powered patient-monitoring platform that learns individualized physiological baselines from wearables to detect early deterioration. Currently being developed as a <strong>startup</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="panel" data-beat="3" style="--accent: var(--experience);">
+      <div class="panel-scroll">
+        <span class="eyebrow">Experience</span>
+        <h2>Where I've worked</h2>
+        <div class="item">
+          <h3>Data Science Intern</h3>
+          <div class="org">Transportation Services, City of Toronto</div>
+          <div class="dates">September 2025 to Present</div>
+          <ul>
+            <li>Built the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
+            <li>Built automated congestion monitoring tools supporting <strong>FIFA World Cup</strong> transportation planning.</li>
+            <li>Designed an automated system evaluating ASE camera removals, contributing to analyses presented to <strong>City Council</strong> and discussed publicly by the <strong>Mayor</strong>.</li>
+            <li>Developed geospatial accessibility models in R and QGIS, and ML models for congestion forecasting and collision-severity prediction.</li>
+            <li>Automated Python and SQL workflows over large-scale transportation datasets.</li>
+          </ul>
+        </div>
+        <div class="item">
+          <h3>Co-President</h3>
+          <div class="org">Canadian Society of Civil Engineering (CSCE), U of T</div>
+          <div class="dates">April 2025 to May 2026</div>
+          <ul>
+            <li>Led a six-sector executive team across academics, professional development, marketing, events, and external relations.</li>
+            <li>Led recruitment through <strong>20+ executive interviews</strong>.</li>
+            <li>Founded the External Relations Team to grow industry partnerships and sponsorships.</li>
+            <li>Collaborated with CSCE Toronto and Ontario chapters to coordinate joint initiatives, enhance visibility, and expand professional networking opportunities.</li>
+            <li>Secured over <strong>$4,000</strong> in sponsorships and managed <strong>$14,000+</strong> in annual event budgets.</li>
+            <li>Strengthened student and industry partnerships through networking and professional events.</li>
+          </ul>
+        </div>
+        <div class="item">
+          <h3>Civil Engineering Intern</h3>
+          <div class="org">Saudi Icon, Riyadh, Saudi Arabia</div>
+          <div class="dates">May 2024 to July 2024</div>
+          <ul>
+            <li>Supported construction of a nine-storey residential building and associated infrastructure.</li>
+            <li>Supervised concrete testing and quality-assurance activities.</li>
+            <li>Reviewed drawings and coordinated with site teams to resolve issues before execution.</li>
+          </ul>
+        </div>
+        <div class="item">
+          <h3>VP Academia</h3>
+          <div class="org">Canadian Society of Civil Engineering (CSCE), U of T</div>
+          <div class="dates">November 2023 to April 2025</div>
+          <ul>
+            <li>Led the Academic Sector, overseeing a team, managing tasks, and optimizing operations to increase efficiency and club engagement.</li>
+            <li>Created and launched a <strong>coffee chat program</strong>, matching students with professors for personalized meetings, enhancing faculty-student interaction and fostering academic connections.</li>
+            <li>Organized and coordinated a <strong>research panel</strong>, inviting three professors to present various faculty opportunities, resulting in <strong>several students securing research positions</strong>.</li>
+            <li>Organized academic initiatives supporting engineering students.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESUME -->
+    <section class="panel" data-beat="4" style="--accent: var(--resume);">
+      <div class="panel-scroll">
+        <span class="eyebrow">Résumé</span>
+        <h2>Skills &amp; résumé</h2>
+        <div class="skillgroup"><h4>Programming</h4><div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">PostgreSQL</span><span class="tag">R</span></div></div>
+        <div class="skillgroup"><h4>Transportation &amp; Geospatial</h4><div class="tags"><span class="tag">QGIS</span><span class="tag">ArcGIS</span><span class="tag">Transportation Analytics</span><span class="tag">Accessibility Modeling</span><span class="tag">Traffic Data Analysis</span></div></div>
+        <div class="skillgroup"><h4>Machine Learning &amp; Data</h4><div class="tags"><span class="tag">scikit-learn</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span><span class="tag">Matplotlib</span></div></div>
+        <div class="skillgroup"><h4>Engineering Software</h4><div class="tags"><span class="tag">AutoCAD</span><span class="tag">Autodesk Revit</span><span class="tag">Rhino 3D</span><span class="tag">SketchUp</span></div></div>
+        <div class="skillgroup"><h4>Tools</h4><div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">AWS</span><span class="tag">DBeaver</span><span class="tag">Excel</span><span class="tag">Power Automate</span><span class="tag">SSH</span><span class="tag">LaTeX</span></div></div>
+        <div class="item" style="margin-top:4px;">
+          <h3>Education</h3>
+          <div class="org">University of Toronto</div>
+          <div class="dates">B.A.Sc. (Honours), Civil Engineering · 2022 to 2027</div>
+          <p style="margin-top:4px;">CGPA <strong>3.50</strong> · Dean's List ×3</p>
+        </div>
+        <div class="item">
+          <h3>Awards</h3>
+          <div class="awards-list">
+            <div>🏆 AI × Bio Hackathon Winner</div>
+            <div>🏆 Manuel A. Fine Scholarship</div>
+            <div>🏆 Victor Xin Scholarship</div>
+            <div>🏆 WSP Scholarship</div>
+            <div>🏆 Dean's List ×3</div>
+          </div>
+        </div>
+        <div class="resume-actions">
+          <button class="btn" id="view-resume">👁 View résumé</button>
+          <a class="btn btn-outline" href="./Wael_Halabi_Resume.pdf" target="_blank" rel="noopener" download>⬇ Download PDF</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Contact 3D clickable overlays: transparent <a>s positioned each frame at the 3D labels -->
+  <div id="contact3d" class="gone">
+    <a href="mailto:wael.halabi@mail.utoronto.ca" data-key="Contact_Email" aria-label="Email"></a>
+    <a href="https://www.linkedin.com/in/wael-halabi-/" data-key="Contact_LinkedIn" target="_blank" rel="noopener" aria-label="LinkedIn"></a>
+    <a href="https://github.com/wael6954" data-key="Contact_GitHub" target="_blank" rel="noopener" aria-label="GitHub"></a>
+    <a href="https://wael-halabi.medium.com" data-key="Contact_Medium" target="_blank" rel="noopener" aria-label="Medium"></a>
+  </div>
+
+  <!-- Résumé PDF viewer modal -->
+  <div id="pdf-modal" class="gone" role="dialog" aria-modal="true" aria-label="Résumé viewer">
+    <div class="pdf-backdrop"></div>
+    <div class="pdf-frame-wrap">
+      <div class="pdf-bar"><span>Wael Halabi — Résumé</span><button id="pdf-close" aria-label="Close résumé">✕</button></div>
+      <iframe id="pdf-frame" title="Wael Halabi résumé"></iframe>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="load-name">Wael Halabi</div>
+    <div class="load-sub">Building Transit World</div>
+    <div id="load-bar"><div id="load-fill"></div></div>
+    <div id="load-pct">0%</div>
+  </div>
+  <noscript>
+    <div style="position:fixed;inset:0;z-index:99;background:#bfe3f2;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#22303f;">
+      <p>This portfolio needs JavaScript. <a href="./simple.html">View the simple version</a></p>
+    </div>
+  </noscript>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="./main.js?v=30"></script>
+</body>
+</html>

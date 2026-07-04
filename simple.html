@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wael Halabi</title>
+  <meta name="description" content="Wael Halabi is a civil engineering student at the University of Toronto working in transportation, analytics, and machine learning." />
+  <meta name="theme-color" content="#bfe3f2" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+  <!-- Proxima Nova is a commercial Adobe font (not on Google Fonts). Body text
+       falls back to Montserrat until you add your own Adobe Fonts (Typekit) kit:
+  <link rel="stylesheet" href="https://use.typekit.net/YOUR_KIT_ID.css"> -->
+  <style>
+    :root {
+      --sky: #bfe3f2; --ink: #22303f; --ink-soft: #55636f;
+      --about: #2f7ca8; --projects: #d9722f; --experience: #3f9457;
+      --resume: #7a5fa8; --contact: #b5432f;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Proxima Nova', 'Montserrat', sans-serif; color: var(--ink); background: #fdfbf6; line-height: 1.65; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
+    header { margin-bottom: 52px; }
+    .kicker { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .24em;
+      text-transform: uppercase; color: var(--contact); }
+    h1 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 46px;
+      letter-spacing: -.02em; line-height: 1.02; margin: 10px 0 12px; }
+    .tagline { font-family: 'Montserrat', -apple-system, sans-serif; font-size: 19px; color: var(--ink-soft); }
+    .to3d { display: inline-block; margin-top: 18px; font-family: 'Montserrat', sans-serif;
+      font-size: 12px; letter-spacing: .06em; color: #fff; background: var(--contact);
+      padding: 10px 18px; border-radius: 3px; text-decoration: none; }
+    .to3d:hover { filter: brightness(1.08); }
+    section { margin-bottom: 48px; }
+    .eyebrow { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .22em;
+      text-transform: uppercase; margin-bottom: 6px; display: block; }
+    h2 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 400; font-size: 30px;
+      letter-spacing: -.015em; margin-bottom: 16px; }
+    p { font-size: 15px; color: var(--ink-soft); margin-bottom: 12px; }
+    strong { color: var(--ink); font-weight: 500; }
+    .item { padding: 18px 0; border-top: 1px solid rgba(34,48,63,.12); }
+    .item:first-of-type { border-top: none; padding-top: 4px; }
+    h3 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 19px; margin-bottom: 4px; }
+    .meta { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .12em;
+      text-transform: uppercase; margin-bottom: 8px; }
+    .org { font-size: 14px; font-weight: 500; }
+    .dates { font-family: 'Montserrat', sans-serif; font-size: 12px; color: var(--ink-soft); margin: 2px 0 8px; }
+    ul { list-style: none; }
+    li { font-size: 13.5px; color: var(--ink-soft); padding-left: 16px; position: relative; margin-bottom: 6px; }
+    li::before { content: ""; position: absolute; left: 0; top: 10px; width: 7px; height: 1.5px; background: currentColor; }
+    a { color: var(--contact); }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .tag { font-size: 12px; font-weight: 500; background: rgba(34,48,63,.06); padding: 5px 11px; border-radius: 3px; color: var(--ink); }
+    h4 { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+    .links { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .links a { font-size: 15px; font-weight: 500; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    .links span { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink-soft); display: block; }
+    .btn { display: inline-block; margin-top: 16px; font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-weight: 500;
+      font-size: 14px; color: #fff; background: var(--resume); padding: 12px 20px; border-radius: 4px;
+      text-decoration: none; }
+    .btn:hover { filter: brightness(1.08); }
+    footer { border-top: 1px solid rgba(34,48,63,.12); padding-top: 24px; font-size: 13px; color: var(--ink-soft); }
+    #s-about .eyebrow { color: var(--about); } #s-about .meta { color: var(--about); }
+    #s-projects .eyebrow { color: var(--projects); } #s-projects .meta { color: var(--projects); }
+    #s-exp .eyebrow { color: var(--experience); }
+    #s-resume .eyebrow { color: var(--resume); }
+    #s-contact .eyebrow { color: var(--contact); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <span class="kicker">Transit World · Simple version</span>
+      <h1>Wael Halabi</h1>
+      <p class="tagline">Civil engineering at the University of Toronto. Transportation, analytics, and machine learning.</p>
+      <a class="to3d" href="./index.html">Ride the 3D version →</a>
+    </header>
+
+    <section id="s-about">
+      <span class="eyebrow">About</span>
+      <h2>About me</h2>
+      <p>I'm interested in solving transportation problems at the intersection of engineering, analytics, and technology.</p>
+      <p>At the <strong>City of Toronto</strong>, I've worked on projects ranging from <strong>FIFA World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work has supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
+      <p>What I enjoy most are problems where the answer isn't obvious from the data alone: understanding congestion, improving transit reliability, estimating travel demand, or evaluating policy. I like combining engineering judgment with analytical tools to help cities make better decisions.</p>
+      <p>Outside of engineering, I'm usually building side projects, exploring new tech, or playing sports.</p>
+      <div class="tags"><span class="tag">B.A.Sc. Civil Eng. (Honours) '27</span><span class="tag">CGPA 3.50</span><span class="tag">Dean's List ×3</span><span class="tag">English / Arabic</span></div>
+    </section>
+
+    <section id="s-projects">
+      <span class="eyebrow">Projects</span>
+      <h2>Featured work</h2>
+      <div class="item">
+        <h3>Automated Speed Enforcement Evaluation</h3>
+        <div class="meta">2026 · Python · SQL · Transportation Analytics</div>
+        <p>Designed and deployed an automated system evaluating the impacts of ASE camera removals across Toronto. Built scalable analytics pipelines on city-wide traffic data to monitor roadway performance and support policy evaluation. The analyses informed <strong>City Council</strong> reporting and were discussed publicly by the <strong>Mayor</strong>.</p>
+      </div>
+      <div class="item">
+        <h3>FIFA World Cup Congestion Monitoring</h3>
+        <div class="meta">2026 · Python · SQL · Geospatial</div>
+        <p>Developed automated congestion monitoring workflows supporting the <strong>City of Toronto</strong>'s transportation planning for the <strong>FIFA World Cup</strong>. Built repeatable Python and SQL pipelines to monitor network performance, identify congestion trends, and generate operational insights.</p>
+      </div>
+      <div class="item">
+        <h3>Predicting Streetcar Delays in Toronto</h3>
+        <div class="meta">2025 · Python · Machine Learning</div>
+        <p>Built ML models on <strong>over ten years</strong> of TTC streetcar delay data. Random Forest models reached <strong>R² up to 0.98</strong> and <strong>MAE as low as 0.73 min</strong>, showing how historical transit data can improve operational planning.</p>
+        <p><a href="https://wael-halabi.medium.com/predicting-streetcar-delays-in-toronto-using-historical-data-and-machine-learning-844cce83a09a" target="_blank" rel="noopener">Read the write-up ↗</a></p>
+      </div>
+      <div class="item">
+        <h3>City-Wide Bicycle Demand Estimation</h3>
+        <div class="meta">2025 · Python · SQL · PostgreSQL</div>
+        <p>A city-scale pipeline for <strong>Annual Average Daily Bicycle Traffic (AADT)</strong>, combining temporal normalization, seasonal adjustment, and confidence interval estimation to support cycling infrastructure planning.</p>
+      </div>
+      <div class="item">
+        <h3>Accessibility Modeling for Planning</h3>
+        <div class="meta">2025 · R · QGIS</div>
+        <p>Reproducible geospatial workflows computing gravity-based and cumulative accessibility measures across transportation networks, with GIS visualizations supporting planning and accessibility analysis.</p>
+      </div>
+      <div class="item">
+        <h3>ShiftED, Dynamic Triage Monitoring</h3>
+        <div class="meta">2026 · AI/ML · Healthcare · 🏆 Hackathon Winner</div>
+        <p><strong>Winner of the AI × Bio Hackathon.</strong> An AI-powered patient-monitoring platform that learns individualized physiological baselines from wearables to detect early deterioration. Currently being developed as a <strong>startup</strong>.</p>
+      </div>
+    </section>
+
+    <section id="s-exp">
+      <span class="eyebrow">Experience</span>
+      <h2>Where I've worked</h2>
+      <div class="item">
+        <h3>Data Science Intern</h3>
+        <div class="org">Transportation Services, City of Toronto</div>
+        <div class="dates">September 2025 to Present</div>
+        <ul>
+          <li>Built the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
+          <li>Built automated congestion monitoring tools supporting <strong>FIFA World Cup</strong> transportation planning.</li>
+          <li>Designed an automated system evaluating ASE camera removals, contributing to analyses presented to <strong>City Council</strong> and discussed publicly by the <strong>Mayor</strong>.</li>
+          <li>Developed geospatial accessibility models in R and QGIS, and ML models for congestion forecasting and collision-severity prediction.</li>
+          <li>Automated Python and SQL workflows over large-scale transportation datasets.</li>
+        </ul>
+      </div>
+      <div class="item">
+        <h3>Co-President</h3>
+        <div class="org">Canadian Society of Civil Engineering (CSCE), U of T</div>
+        <div class="dates">April 2025 to May 2026</div>
+        <ul>
+          <li>Led a six-sector executive team across academics, professional development, marketing, events, and external relations.</li>
+          <li>Led recruitment through <strong>20+ executive interviews</strong>.</li>
+          <li>Founded the External Relations Team to grow industry partnerships and sponsorships.</li>
+          <li>Collaborated with CSCE Toronto and Ontario chapters to coordinate joint initiatives, enhance visibility, and expand professional networking opportunities.</li>
+          <li>Secured over <strong>$4,000</strong> in sponsorships and managed <strong>$14,000+</strong> in annual event budgets.</li>
+          <li>Strengthened student and industry partnerships through networking and professional events.</li>
+        </ul>
+      </div>
+      <div class="item">
+        <h3>Civil Engineering Intern</h3>
+        <div class="org">Saudi Icon, Riyadh, Saudi Arabia</div>
+        <div class="dates">May 2024 to July 2024</div>
+        <ul>
+          <li>Supported construction of a nine-storey residential building and associated infrastructure.</li>
+          <li>Supervised concrete testing and quality-assurance activities.</li>
+          <li>Reviewed drawings and coordinated with site teams to resolve issues before execution.</li>
+        </ul>
+      </div>
+      <div class="item">
+        <h3>VP Academia</h3>
+        <div class="org">Canadian Society of Civil Engineering (CSCE), U of T</div>
+        <div class="dates">November 2023 to April 2025</div>
+        <ul>
+          <li>Led the Academic Sector, overseeing a team, managing tasks, and optimizing operations to increase efficiency and club engagement.</li>
+          <li>Created and launched a <strong>coffee chat program</strong>, matching students with professors for personalized meetings, enhancing faculty-student interaction and fostering academic connections.</li>
+          <li>Organized and coordinated a <strong>research panel</strong>, inviting three professors to present various faculty opportunities, resulting in <strong>several students securing research positions</strong>.</li>
+          <li>Organized academic initiatives supporting engineering students.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s-resume">
+      <span class="eyebrow">Résumé</span>
+      <h2>Skills &amp; résumé</h2>
+      <h4>Programming</h4>
+      <div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">PostgreSQL</span><span class="tag">R</span></div>
+      <h4>Transportation &amp; Geospatial</h4>
+      <div class="tags"><span class="tag">QGIS</span><span class="tag">ArcGIS</span><span class="tag">Transportation Analytics</span><span class="tag">Accessibility Modeling</span><span class="tag">Traffic Data Analysis</span></div>
+      <h4>Machine Learning &amp; Data</h4>
+      <div class="tags"><span class="tag">scikit-learn</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span><span class="tag">Matplotlib</span></div>
+      <h4>Engineering Software</h4>
+      <div class="tags"><span class="tag">AutoCAD</span><span class="tag">Autodesk Revit</span><span class="tag">Rhino 3D</span><span class="tag">SketchUp</span></div>
+      <h4>Tools</h4>
+      <div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">AWS</span><span class="tag">DBeaver</span><span class="tag">Excel</span><span class="tag">Power Automate</span><span class="tag">SSH</span><span class="tag">LaTeX</span></div>
+      <div class="item">
+        <h3>Education</h3>
+        <div class="org">University of Toronto</div>
+        <div class="dates">B.A.Sc. (Honours), Civil Engineering · 2022 to 2027</div>
+        <p>CGPA <strong>3.50</strong> · Dean's List ×3</p>
+      </div>
+      <div class="item">
+        <h3>Awards</h3>
+        <ul>
+          <li>AI × Bio Hackathon Winner</li>
+          <li>Manuel A. Fine Scholarship</li>
+          <li>Victor Xin Scholarship</li>
+          <li>WSP Scholarship</li>
+          <li>Dean's List ×3</li>
+        </ul>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+        <a class="btn" style="margin-top:0" href="./Wael_Halabi_Resume.pdf" target="_blank" rel="noopener">👁 View résumé</a>
+        <a class="btn" style="margin-top:0;background:transparent;color:var(--resume);box-shadow:inset 0 0 0 1.5px var(--resume)" href="./Wael_Halabi_Resume.pdf" download>⬇ Download PDF</a>
+      </div>
+    </section>
+
+    <section id="s-contact">
+      <span class="eyebrow">Contact</span>
+      <h2>Let's connect</h2>
+      <p>I'm always interested in opportunities in transportation engineering, planning, traffic operations, intelligent transportation systems, and infrastructure analytics.</p>
+      <div class="links">
+        <a href="mailto:wael.halabi@mail.utoronto.ca"><span>Email</span>wael.halabi@mail.utoronto.ca</a>
+        <a href="https://www.linkedin.com/in/wael-halabi-/" target="_blank" rel="noopener"><span>LinkedIn</span>/in/wael-halabi-</a>
+        <a href="https://github.com/wael6954" target="_blank" rel="noopener"><span>GitHub</span>/wael6954</a>
+        <a href="https://wael-halabi.medium.com" target="_blank" rel="noopener"><span>Medium</span>wael-halabi.medium.com</a>
+      </div>
+    </section>
+
+    <footer>
+      Wael Halabi · Toronto · <a href="./index.html">Ride the 3D version</a>
+    </footer>
+
+  </div>
+</body>
+</html>
