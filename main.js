@@ -32,6 +32,7 @@ const hintEl = document.getElementById('hint')
 const aerialBtn = document.getElementById('aerial-btn')
 const navEl = document.getElementById('nav')
 const panels = [...document.querySelectorAll('.panel')]
+const srAnnouncerEl = document.getElementById('sr-announcer')
 
 // ---------------------------------------------------------------------------
 // Sound: everything is synthesized with WebAudio (no audio files). A soft wind
@@ -141,15 +142,32 @@ if (viewResumeBtn) viewResumeBtn.addEventListener('click', openPdf)
 if (pdfClose) pdfClose.addEventListener('click', closePdf)
 if (pdfModal) pdfModal.querySelector('.pdf-backdrop').addEventListener('click', closePdf)
 
+// --- Copy-email fallback (mobile Contact overlay), in case the visitor has
+// no mail client configured to handle the mailto: link ---
+document.querySelectorAll('.copy-btn[data-copy]').forEach((btn) => {
+  const label = btn.querySelector('.copy-label')
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(btn.dataset.copy)
+      btn.classList.add('copied')
+      if (label) label.textContent = 'Copied'
+      setTimeout(() => { btn.classList.remove('copied'); if (label) label.textContent = 'Copy email' }, 1800)
+    } catch { /* clipboard API unavailable — the mailto link still works */ }
+  })
+})
+
 // --- Renderer ---
 const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2))
+// capped well below devicePixelRatio: on a high-DPI/scaled display (e.g. 1.75x)
+// the old cap of 2 was pushing ~5MP frames through soft shadows + 10+ point
+// lights on integrated GPUs, which is what tanked the framerate
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.3 : 1.5))
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.outputColorSpace = THREE.SRGBColorSpace
 renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.toneMappingExposure = 1.05
 renderer.shadowMap.enabled = true
-renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.shadowMap.type = THREE.PCFShadowMap
 app.appendChild(renderer.domElement)
 
 // --- Scene + sky ---
@@ -166,7 +184,7 @@ scene.add(hemi)
 const sun = new THREE.DirectionalLight(0xfff0d6, 2.1)
 sun.position.set(28, 44, 18)
 sun.castShadow = true
-sun.shadow.mapSize.set(isMobile ? 1024 : 2048, isMobile ? 1024 : 2048)
+sun.shadow.mapSize.set(isMobile ? 1024 : 1536, isMobile ? 1024 : 1536)
 const s = 46
 sun.shadow.camera.left = -s; sun.shadow.camera.right = s
 sun.shadow.camera.top = s; sun.shadow.camera.bottom = -s
@@ -191,6 +209,7 @@ const DAY_HEMI_GND = new THREE.Color(0x6b7a5a), NIGHT_HEMI_GND = new THREE.Color
 const WINDOW_GLOW = new THREE.Color(0xffcb6e), LAMP_GLOW = new THREE.Color(0xffe0a0)
 const windowMats = new Set(), lampMats = new Set()
 const lampLights = [], _lb = new THREE.Vector3()
+let lampLightSkip = false
 let stars = null, moon = null, fountLight = null
 const lerp = (a, b, k) => a + (b - a) * k
 
@@ -286,18 +305,32 @@ const STOPS = [
 ]
 const LABELS = ['Home', 'About', 'Projects', 'Experience', 'Résumé', 'Contact']
 const N = STOPS.length
-const SEG = 1 / (N - 1)
 const beatG = (i) => i / (N - 1)
-
-let posCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s.pos), false, 'catmullrom', 0.4)
-const lookCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s.look), false, 'catmullrom', 0.4)
 
 // The tour's first control point follows the live orbit, so leaving Home
 // starts exactly where the camera is, whatever the current orbit angle.
 let orbitA = Math.PI * 0.25
 function rebuildHomeStart() {
   STOPS[0].pos.set(Math.sin(orbitA) * 44, 30, Math.cos(orbitA) * 44)
-  posCurve = new THREE.CatmullRomCurve3(STOPS.map(s => s.pos), false, 'catmullrom', 0.4)
+}
+
+// Camera resolve state, referenced below by applyCamera and beginFlight.
+const _pos = new THREE.Vector3(), _look = new THREE.Vector3()
+
+// Each beat flies directly, point to point, straight from wherever the
+// camera currently is to STOPS[targetBeat] - indexing that array directly
+// rather than riding a single curve through every stop in between. That's
+// what lets a jump like aerial view -> Contact go straight there instead of
+// sweeping past About, Projects, and Experience on the way.
+let flightFrom = { pos: STOPS[0].pos.clone(), look: STOPS[0].look.clone() }
+let flightStartG = 0, flightEndG = 0
+function beginFlight() {
+  // read camera.position (not _pos) so a flight begun mid-aerial-view starts
+  // from where the aerial lerp actually left the camera, not a stale value
+  flightFrom.pos.copy(camera.position)
+  flightFrom.look.copy(_look)
+  flightStartG = currentG
+  flightEndG = beatG(targetBeat)
 }
 
 // ---------------------------------------------------------------------------
@@ -323,11 +356,13 @@ function setBeat(i) {
   if (i !== targetBeat) {
     if (targetBeat === 0 && i > 0 && currentG < 0.06) rebuildHomeStart()
     targetBeat = i
+    beginFlight()
     panelOpen = false
     overscroll = 0
     cooldownUntil = nowMs() + 620
     const p = panels.find(p => +p.dataset.beat === i)
     if (p) p.querySelector('.panel-scroll').scrollTop = 0
+    if (srAnnouncerEl) srAnnouncerEl.textContent = 'Now viewing: ' + LABELS[i]
   }
 }
 function tryAdvance(delta) {
@@ -345,8 +380,15 @@ function activeScroller() {
 
 addEventListener('wheel', (e) => {
   if (pdfOpen()) return
-  const overPanel = e.target.closest && e.target.closest('.panel')
   const sc = activeScroller()
+  if (panelOpen) {
+    // scroll lock: while a popup is open, wheel input only scrolls its own
+    // content, so it never reaches the section-advance logic underneath
+    e.preventDefault()
+    if (sc) sc.scrollTop += e.deltaY
+    return
+  }
+  const overPanel = e.target.closest && e.target.closest('.panel')
   if (overPanel && sc) {
     const canScroll = e.deltaY > 0
       ? sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1
@@ -366,8 +408,13 @@ addEventListener('touchmove', (e) => {
   if (lastY == null) return
   const dy = lastY - e.touches[0].clientY
   lastY = e.touches[0].clientY
-  const overPanel = e.target.closest && e.target.closest('.panel')
   const sc = activeScroller()
+  if (panelOpen) {
+    // scroll lock: same as wheel, keep touch drags confined to the popup
+    if (sc) sc.scrollTop += dy
+    return
+  }
+  const overPanel = e.target.closest && e.target.closest('.panel')
   if (overPanel && sc) {
     const canScroll = dy > 0
       ? sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1
@@ -383,11 +430,12 @@ addEventListener('touchend', () => { lastY = null })
 addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && pdfOpen()) { closePdf(); return }
   if (pdfOpen()) return
+  if (e.key === 'Escape') { panelOpen = false; return }
+  if (panelOpen) return   // scroll lock: keyboard section-jumps are disabled while a popup is open
   if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); setBeat(targetBeat + 1) }
   if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); setBeat(targetBeat - 1) }
   if (e.key === 'Home') setBeat(0)
   if (e.key === 'End') setBeat(N - 1)
-  if (e.key === 'Escape') panelOpen = false
 })
 
 // --- Section nav dots ---
@@ -417,6 +465,18 @@ panels.forEach((p) => {
   x.textContent = '✕'
   x.addEventListener('click', () => { panelOpen = false })
   p.appendChild(x)
+
+  // bottom fade: hints there's more to scroll, hidden once at the end
+  const fade = document.createElement('div')
+  fade.className = 'panel-fade'
+  p.appendChild(fade)
+  const scroller = p.querySelector('.panel-scroll')
+  const syncFade = () => {
+    const hasMore = scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 2
+    fade.classList.toggle('show', hasMore)
+  }
+  scroller.addEventListener('scroll', syncFade, { passive: true })
+  new ResizeObserver(syncFade).observe(scroller)
 })
 const _iv = new THREE.Vector3()
 
@@ -477,7 +537,7 @@ function updateTransitMap() {
 
 // --- Loaders (Draco) ---
 const draco = new DRACOLoader()
-draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+draco.setDecoderPath('./vendor/draco/')
 const loader = new GLTFLoader()
 loader.setDRACOLoader(draco)
 const BUST = '?v=' + Date.now()
@@ -533,6 +593,10 @@ let contactMats = []
 const contactLabels = new Map()   // meshName -> { mesh, link }
 const contact3dEl = document.getElementById('contact3d')
 const contactLinks = contact3dEl ? [...contact3dEl.querySelectorAll('a')] : []
+// mobile stand-ins for the 3D name/contact text (see tick(): they replace
+// those meshes entirely on narrow screens instead of trying to shrink them)
+const hero2dEl = document.getElementById('hero2d')
+const contact2dEl = document.getElementById('contact2d')
 const _pv = new THREE.Vector3()
 let tramPhi = 0, tramSpeed = 0
 // tram-stop halt: eases to a stop beside TramStop (three.js (19,0,0) -> phi=π/2), dings, dwells
@@ -626,8 +690,15 @@ async function init() {
         if (hex === '96c3cd') { m.emissive = WINDOW_GLOW.clone(); m.emissiveIntensity = 0; windowMats.add(m) }
         else if (o.name.startsWith('Lamph')) { m.emissive = LAMP_GLOW.clone(); m.emissiveIntensity = 0; lampMats.add(m) }
       }
-      // a point light at each streetlamp head (desktop only, no shadows)
+      // a point light at every other streetlamp head (desktop only, no shadows).
+      // Every real-time light adds a per-pixel cost across every material in
+      // the scene, so lighting every lamp was the single biggest thing
+      // dragging down the framerate; every other lamp still reads as lit at
+      // night since the glowing emissive heads (windowMats/lampMats) carry
+      // the rest, and lamps are close enough together for it to look continuous.
       if (o.name.startsWith('Lamph') && !isMobile) {
+        lampLightSkip = !lampLightSkip
+        if (lampLightSkip) return
         o.geometry.computeBoundingBox()
         o.getWorldPosition(_lb)
         const bb = o.geometry.boundingBox
@@ -712,18 +783,19 @@ async function init() {
 }
 init()
 
-// --- Camera resolve: orbit (top) blends into the beat path ---
-const _pos = new THREE.Vector3(), _look = new THREE.Vector3()
+// --- Camera resolve: orbit (top) blends into a direct flight to the beat ---
 function applyCamera(dt) {
   const atHome = targetBeat === 0 && currentG < 0.002
   if (atHome) {
-    // resting at Home: live orbit. The tour path starts wherever this leaves off.
+    // resting at Home: live orbit. Any flight away starts wherever this leaves off.
     if (!reduceMotion) orbitA += dt * 0.06
     _pos.set(Math.sin(orbitA) * 44, 30, Math.cos(orbitA) * 44)
     _look.copy(HOME_LOOK)
   } else {
-    _pos.copy(posCurve.getPoint(currentG))
-    _look.copy(lookCurve.getPoint(currentG))
+    const span = flightEndG - flightStartG
+    const localT = span !== 0 ? clamp01((currentG - flightStartG) / span) : 1
+    _pos.copy(flightFrom.pos).lerp(STOPS[targetBeat].pos, localT)
+    _look.copy(flightFrom.look).lerp(STOPS[targetBeat].look, localT)
   }
   camera.position.copy(_pos)
   camera.lookAt(_look)
@@ -750,6 +822,12 @@ function syncUI() {
     _iv.copy(anchor).project(camera)
     infoBtn.style.left = ((_iv.x * 0.5 + 0.5) * window.innerWidth) + 'px'
     infoBtn.style.top = ((-_iv.y * 0.5 + 0.5) * window.innerHeight) + 'px'
+  }
+
+  // mobile stand-ins for the 3D name/contact text, shown at their matching beat
+  if (isMobile) {
+    hero2dEl.classList.toggle('show', targetBeat === 0 && !aerial && settled)
+    contact2dEl.classList.toggle('show', targetBeat === N - 1 && !aerial && settled)
   }
 }
 
@@ -846,14 +924,17 @@ function tick() {
     }
   }
   if (nameSky) {
-    nameSky.visible = !aerial
-    if (!aerial) {
+    // on narrow/portrait screens this wide banner text either overflows the
+    // sides or has to shrink to the point of being unreadable, so it's
+    // replaced entirely by the #hero2d flat overlay (see syncUI) instead
+    nameSky.visible = !aerial && !isMobile
+    if (nameSky.visible) {
       nameSky.rotation.y = Math.atan2(camera.position.x - nameSky.position.x, camera.position.z - nameSky.position.z)
       nameSky.position.y = 27 + (reduceMotion ? 0 : Math.sin(t * 0.6) * 0.5)
     }
   }
   if (statement) {
-    const opacity = aerial ? 0 : (1 - smoothstep(0.01, 0.06, currentG))
+    const opacity = (aerial || isMobile) ? 0 : (1 - smoothstep(0.01, 0.06, currentG))
     statement.visible = opacity > 0.005
     if (statement.visible) {
       for (const m of statementMats) m.opacity = opacity
@@ -862,8 +943,9 @@ function tick() {
     }
   }
   if (contactGroup) {
-    // fade in as we approach the Contact beat (g = 1.0)
-    const opacity = aerial ? 0 : smoothstep(0.86, 0.98, currentG)
+    // fade in as we approach the Contact beat (g = 1.0); replaced by
+    // #contact2d on mobile, same reasoning as nameSky above
+    const opacity = (aerial || isMobile) ? 0 : smoothstep(0.86, 0.98, currentG)
     contactGroup.visible = opacity > 0.005
     if (contactGroup.visible) {
       for (const m of contactMats) m.opacity = opacity

@@ -18,6 +18,7 @@ Everything is flat-color low-poly geometry with the color baked into the GLB mat
 | `favicon.svg`, `og.jpg` | The site icon (a little streetcar) and the social-share card. |
 | `Wael_Halabi_Resume.pdf` | The résumé, opened in an in-page viewer or downloaded from the Résumé section. |
 | `transit_world.blend` | The Blender source for everything above. Renders crash this file, so it was built and checked with viewport screenshots and the live preview. |
+| `vendor/` | Local copies of three.js and the Draco decoder, so the site doesn't depend on any CDN for its 3D code. |
 
 ## How it works
 
@@ -60,8 +61,8 @@ Fonts are Montserrat for headings and labels, and Proxima Nova for body with Mon
 
 ## Built with
 
-Plain three.js (r0.160) over a CDN import map, GLTFLoader and DRACOLoader for the Draco-compressed GLBs, and WebAudio for the sound. No bundler, no framework. The geometry is all original work made in Blender, so nothing here needs attribution.
+Plain three.js (r0.160) loaded from the local `vendor/` folder through an import map, GLTFLoader and DRACOLoader for the Draco-compressed GLBs, and WebAudio for the sound. No bundler, no framework. The geometry is all original work made in Blender, so nothing here needs attribution.
 
 ## Deploying
 
-It's a static site, so any static host works. Point the host at this folder and serve `index.html`. GitHub Pages, Netlify, Vercel as a static project, or Cloudflare Pages all handle it with no build command. The only runtime dependency is internet access for the three.js and Draco CDNs.
+It's a static site, so any static host works. Point the host at this folder and serve `index.html`. GitHub Pages, Netlify, Vercel as a static project, or Cloudflare Pages all handle it with no build command. three.js and the Draco decoder are bundled in `vendor/`, so the only thing the site fetches from outside is the Montserrat webfont, and that quietly falls back to a system font if it can't load.

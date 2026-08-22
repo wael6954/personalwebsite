@@ -5,8 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wael Halabi</title>
   <meta name="description" content="Wael Halabi is a civil engineering student at the University of Toronto working in transportation, analytics, and machine learning." />
-  <meta name="theme-color" content="#bfe3f2" />
+  <link rel="canonical" href="https://waelhalabi.com/simple.html" />
+  <meta property="og:title" content="Wael Halabi | Transit World (Simple)" />
+  <meta property="og:description" content="Civil engineering student at the University of Toronto. Transportation, analytics, and machine learning." />
+  <meta property="og:image" content="https://waelhalabi.com/og.jpg" />
+  <meta property="og:url" content="https://waelhalabi.com/simple.html" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Wael Halabi | Transit World (Simple)" />
+  <meta name="twitter:description" content="Civil engineering student at the University of Toronto. Transportation, analytics, and machine learning." />
+  <meta name="twitter:image" content="https://waelhalabi.com/og.jpg" />
+  <meta name="theme-color" content="#fdfbf6" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="manifest" href="./manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
@@ -15,15 +27,71 @@
   <link rel="stylesheet" href="https://use.typekit.net/YOUR_KIT_ID.css"> -->
   <style>
     :root {
-      --sky: #bfe3f2; --ink: #22303f; --ink-soft: #55636f;
+      --sky: #bfe3f2; --ink: #22303f; --ink-soft: #55636f; --bg: #fdfbf6;
       --about: #2f7ca8; --projects: #d9722f; --experience: #3f9457;
       --resume: #7a5fa8; --contact: #b5432f;
     }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #eef2f5; --ink-soft: #a9b6c0; --bg: #12161b;
+        --about: #6db2df; --projects: #eba169; --experience: #6fcb8b;
+        --resume: #ab93d6; --contact: #e58269;
+      }
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Proxima Nova', 'Montserrat', sans-serif; color: var(--ink); background: #fdfbf6; line-height: 1.65; }
-    .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
-    header { margin-bottom: 52px; }
-    .kicker { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .24em;
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body { font-family: 'Proxima Nova', 'Montserrat', sans-serif; color: var(--ink); background: var(--bg); line-height: 1.65; }
+
+    /* Ambient background: a faint transit-map dot grid, slow-drifting color
+       "aurora" blobs in the section accent colors, and one looping route line
+       with traveling dashes, evoking the 3D version's transit-map overlay
+       without any WebGL. Fixed + z-index:-1 so it sits behind all real
+       content and never affects layout or scroll. */
+    .bg-fx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .bg-fx::before { content: ""; position: absolute; inset: 0;
+      background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+      background-size: 30px 30px; opacity: .05; }
+    .bg-fx .blob { position: absolute; border-radius: 50%; filter: blur(90px);
+      opacity: .22; will-change: transform; }
+    .bg-fx .blob-1 { width: 440px; height: 440px; top: -140px; left: -120px; background: var(--about);
+      animation: fx-float-a 28s ease-in-out infinite; }
+    .bg-fx .blob-2 { width: 380px; height: 380px; top: 8%; right: -150px; background: var(--projects);
+      animation: fx-float-b 34s ease-in-out infinite; }
+    .bg-fx .blob-3 { width: 480px; height: 480px; bottom: -180px; left: 6%; background: var(--resume);
+      animation: fx-float-c 32s ease-in-out infinite; }
+    .bg-fx .blob-4 { width: 340px; height: 340px; bottom: 4%; right: 2%; background: var(--contact);
+      animation: fx-float-a 24s ease-in-out infinite reverse; }
+    @media (prefers-color-scheme: dark) { .bg-fx .blob { opacity: .32; } }
+    @keyframes fx-float-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(36px, -28px) scale(1.08); } }
+    @keyframes fx-float-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-32px, 34px) scale(.94); } }
+    @keyframes fx-float-c { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(26px, 22px) scale(1.05); } }
+
+    .bg-fx .route { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .16; }
+    .bg-fx .route path { fill: none; stroke: var(--contact); stroke-width: .3; stroke-linecap: round;
+      stroke-dasharray: 1.2 2.6; animation: fx-dash 60s linear infinite; }
+    .bg-fx .route circle { fill: var(--contact); animation: fx-pulse 3.4s ease-in-out infinite; }
+    .bg-fx .route circle:nth-child(3) { animation-delay: .8s; }
+    .bg-fx .route circle:nth-child(4) { animation-delay: 1.6s; }
+    .bg-fx .route circle:nth-child(5) { animation-delay: 2.4s; }
+    @keyframes fx-dash { to { stroke-dashoffset: -400; } }
+    @keyframes fx-pulse { 0%, 100% { opacity: .5; r: .55; } 50% { opacity: 1; r: .95; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-fx .blob, .bg-fx .route path, .bg-fx .route circle { animation: none; }
+    }
+    @media (max-width: 560px) { .bg-fx .blob { opacity: .14; } }
+
+    a { color: var(--contact); }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--contact); outline-offset: 3px; border-radius: 2px; }
+
+    .skip-link { position: absolute; left: -9999px; top: 0; z-index: 100;
+      background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 0 0 6px 0;
+      font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .skip-link:focus { left: 0; }
+
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    header.wrap { padding-top: 56px; padding-bottom: 40px; }
+    header .kicker { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .24em;
       text-transform: uppercase; color: var(--contact); }
     h1 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 46px;
       letter-spacing: -.02em; line-height: 1.02; margin: 10px 0 12px; }
@@ -32,26 +100,46 @@
       font-size: 12px; letter-spacing: .06em; color: #fff; background: var(--contact);
       padding: 10px 18px; border-radius: 3px; text-decoration: none; }
     .to3d:hover { filter: brightness(1.08); }
-    section { margin-bottom: 48px; }
+
+    /* section nav: sticky pill bar, active section highlighted per its accent color */
+    #site-nav { position: sticky; top: 0; z-index: 20; background: var(--bg);
+      border-bottom: 1px solid rgba(128,128,128,.18); }
+    #site-nav .nav-inner { display: flex; gap: 4px; overflow-x: auto; padding: 10px 0;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    #site-nav .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-link { flex-shrink: 0; font-family: 'Montserrat', sans-serif; font-size: 12.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none;
+      padding: 8px 14px; border-radius: 20px; transition: background .15s ease, color .15s ease; }
+    .nav-link:hover { background: rgba(128,128,128,.12); color: var(--ink); }
+    .nav-link.active { color: #fff; }
+    .nav-link[data-c="about"].active { background: var(--about); }
+    .nav-link[data-c="projects"].active { background: var(--projects); }
+    .nav-link[data-c="experience"].active { background: var(--experience); }
+    .nav-link[data-c="resume"].active { background: var(--resume); }
+    .nav-link[data-c="contact"].active { background: var(--contact); }
+
+    main.wrap { padding: 48px 24px 80px; }
+    section { margin-bottom: 48px; scroll-margin-top: 68px; }
     .eyebrow { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .22em;
       text-transform: uppercase; margin-bottom: 6px; display: block; }
     h2 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 400; font-size: 30px;
       letter-spacing: -.015em; margin-bottom: 16px; }
     p { font-size: 15px; color: var(--ink-soft); margin-bottom: 12px; }
     strong { color: var(--ink); font-weight: 500; }
-    .item { padding: 18px 0; border-top: 1px solid rgba(34,48,63,.12); }
+    .item { padding: 18px 0; border-top: 1px solid rgba(128,128,128,.16); }
     .item:first-of-type { border-top: none; padding-top: 4px; }
     h3 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 19px; margin-bottom: 4px; }
     .meta { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .12em;
-      text-transform: uppercase; margin-bottom: 8px; }
+      text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .meta .ic { width: 11px; height: 11px; flex-shrink: 0; }
     .org { font-size: 14px; font-weight: 500; }
     .dates { font-family: 'Montserrat', sans-serif; font-size: 12px; color: var(--ink-soft); margin: 2px 0 8px; }
     ul { list-style: none; }
     li { font-size: 13.5px; color: var(--ink-soft); padding-left: 16px; position: relative; margin-bottom: 6px; }
     li::before { content: ""; position: absolute; left: 0; top: 10px; width: 7px; height: 1.5px; background: currentColor; }
-    a { color: var(--contact); }
+    a:hover { text-decoration: underline; }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-    .tag { font-size: 12px; font-weight: 500; background: rgba(34,48,63,.06); padding: 5px 11px; border-radius: 3px; color: var(--ink); }
+    .tag { font-size: 12px; font-weight: 500; background: rgba(128,128,128,.14); padding: 5px 11px; border-radius: 3px; color: var(--ink); }
     h4 { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .14em;
       text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
     .links { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
@@ -59,27 +147,70 @@
     .links a:hover { text-decoration: underline; }
     .links span { font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: .12em;
       text-transform: uppercase; color: var(--ink-soft); display: block; }
-    .btn { display: inline-block; margin-top: 16px; font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-weight: 500;
+    .link-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .copy-btn { display: inline-flex; align-items: center; gap: 5px; border: none; background: none;
+      cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
+      letter-spacing: .06em; color: var(--ink-soft); padding: 2px 0; }
+    .copy-btn:hover { color: var(--ink); }
+    .copy-btn svg { width: 12px; height: 12px; }
+    .copy-btn.copied { color: var(--contact); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-weight: 500;
       font-size: 14px; color: #fff; background: var(--resume); padding: 12px 20px; border-radius: 4px;
-      text-decoration: none; }
-    .btn:hover { filter: brightness(1.08); }
-    footer { border-top: 1px solid rgba(34,48,63,.12); padding-top: 24px; font-size: 13px; color: var(--ink-soft); }
+      text-decoration: none; border: none; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); text-decoration: none; }
+    .btn-outline { background: transparent; color: var(--resume); box-shadow: inset 0 0 0 1.5px var(--resume); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .btn-row .btn { margin-top: 0; }
+    footer { border-top: 1px solid rgba(128,128,128,.16); padding-top: 24px; font-size: 13px; color: var(--ink-soft); }
     #s-about .eyebrow { color: var(--about); } #s-about .meta { color: var(--about); }
     #s-projects .eyebrow { color: var(--projects); } #s-projects .meta { color: var(--projects); }
     #s-exp .eyebrow { color: var(--experience); }
     #s-resume .eyebrow { color: var(--resume); }
     #s-contact .eyebrow { color: var(--contact); }
+
+    @media print {
+      #site-nav, .to3d, footer a[href="./index.html"], .bg-fx { display: none; }
+      body { background: #fff; color: #000; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="bg-fx" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path d="M -5 15 C 20 5, 30 30, 50 22 S 85 8, 105 18" vector-effect="non-scaling-stroke" />
+      <path d="M -5 70 C 25 60, 35 90, 60 78 S 90 62, 105 72" vector-effect="non-scaling-stroke" />
+      <circle cx="20" cy="9" r=".6" />
+      <circle cx="50" cy="22" r=".6" />
+      <circle cx="85" cy="8" r=".6" />
+      <circle cx="35" cy="90" r=".6" />
+      <circle cx="90" cy="62" r=".6" />
+    </svg>
+  </div>
 
-    <header>
-      <span class="kicker">Transit World · Simple version</span>
-      <h1>Wael Halabi</h1>
-      <p class="tagline">Civil engineering at the University of Toronto. Transportation, analytics, and machine learning.</p>
-      <a class="to3d" href="./index.html">Ride the 3D version →</a>
-    </header>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="wrap">
+    <span class="kicker">Transit World · Simple version</span>
+    <h1>Wael Halabi</h1>
+    <p class="tagline">Civil engineering at the University of Toronto. Transportation, analytics, and machine learning.</p>
+    <a class="to3d" href="./index.html">Ride the 3D version →</a>
+  </header>
+
+  <nav id="site-nav" aria-label="Section navigation">
+    <div class="nav-inner wrap">
+      <a class="nav-link" data-c="about" href="#s-about">About</a>
+      <a class="nav-link" data-c="projects" href="#s-projects">Projects</a>
+      <a class="nav-link" data-c="experience" href="#s-exp">Experience</a>
+      <a class="nav-link" data-c="resume" href="#s-resume">Résumé</a>
+      <a class="nav-link" data-c="contact" href="#s-contact">Contact</a>
+    </div>
+  </nav>
+
+  <main class="wrap" id="main">
 
     <section id="s-about">
       <span class="eyebrow">About</span>
@@ -94,6 +225,15 @@
     <section id="s-projects">
       <span class="eyebrow">Projects</span>
       <h2>Featured work</h2>
+      <div class="item">
+        <h3>Forecasting AI's Effect on Hospital Costs by Analogy to Industrialization and the Dot-Com Era</h3>
+        <div class="meta">Jul 2026 · Healthcare Economics · Data Analysis ·
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          Top 10 of 328
+        </div>
+        <p>Placed <strong>10th out of 328 participants</strong> (100+ teams) at the <strong>NSRI Summer Research Hackathon</strong>. Tested AI's likely effect on hospital costs against two historical analogies, slow post-electrification productivity gains vs. the dot-com boom-and-bust, using Medicare Cost Report data across <strong>~6,000 hospitals (2011–2024)</strong>. Found administrative cost share has climbed steadily since EHR saturation with no reversal, forecasted to keep rising through 2034, while clinical AI funding already shows classic bubble markers.</p>
+        <p><a href="https://drive.google.com/file/d/10VRXw-quCoEKi6b_xzLqa2NRpXvIypUe/view?pli=1" target="_blank" rel="noopener">Read the report ↗</a></p>
+      </div>
       <div class="item">
         <h3>Automated Speed Enforcement Evaluation</h3>
         <div class="meta">2026 · Python · SQL · Transportation Analytics</div>
@@ -122,7 +262,10 @@
       </div>
       <div class="item">
         <h3>ShiftED, Dynamic Triage Monitoring</h3>
-        <div class="meta">2026 · AI/ML · Healthcare · 🏆 Hackathon Winner</div>
+        <div class="meta">2026 · AI/ML · Healthcare ·
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          Hackathon Winner
+        </div>
         <p><strong>Winner of the AI × Bio Hackathon.</strong> An AI-powered patient-monitoring platform that learns individualized physiological baselines from wearables to detect early deterioration. Currently being developed as a <strong>startup</strong>.</p>
       </div>
     </section>
@@ -135,7 +278,7 @@
         <div class="org">Transportation Services, City of Toronto</div>
         <div class="dates">September 2025 to Present</div>
         <ul>
-          <li>Built the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
+          <li>Helped build the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
           <li>Built automated congestion monitoring tools supporting <strong>FIFA World Cup</strong> transportation planning.</li>
           <li>Designed an automated system evaluating ASE camera removals, contributing to analyses presented to <strong>City Council</strong> and discussed publicly by the <strong>Mayor</strong>.</li>
           <li>Developed geospatial accessibility models in R and QGIS, and ML models for congestion forecasting and collision-severity prediction.</li>
@@ -207,9 +350,15 @@
           <li>Dean's List ×3</li>
         </ul>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
-        <a class="btn" style="margin-top:0" href="./Wael_Halabi_Resume.pdf" target="_blank" rel="noopener">👁 View résumé</a>
-        <a class="btn" style="margin-top:0;background:transparent;color:var(--resume);box-shadow:inset 0 0 0 1.5px var(--resume)" href="./Wael_Halabi_Resume.pdf" download>⬇ Download PDF</a>
+      <div class="btn-row">
+        <a class="btn" href="./Wael_Halabi_Resume.pdf" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          View résumé
+        </a>
+        <a class="btn btn-outline" href="./Wael_Halabi_Resume.pdf" download>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M21 21H3"/></svg>
+          Download PDF
+        </a>
       </div>
     </section>
 
@@ -218,7 +367,13 @@
       <h2>Let's connect</h2>
       <p>I'm always interested in opportunities in transportation engineering, planning, traffic operations, intelligent transportation systems, and infrastructure analytics.</p>
       <div class="links">
-        <a href="mailto:wael.halabi@mail.utoronto.ca"><span>Email</span>wael.halabi@mail.utoronto.ca</a>
+        <div class="link-row">
+          <a href="mailto:wael.halabi@mail.utoronto.ca"><span>Email</span>wael.halabi@mail.utoronto.ca</a>
+          <button class="copy-btn" type="button" data-copy="wael.halabi@mail.utoronto.ca" aria-label="Copy email address">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
         <a href="https://www.linkedin.com/in/wael-halabi-/" target="_blank" rel="noopener"><span>LinkedIn</span>/in/wael-halabi-</a>
         <a href="https://github.com/wael6954" target="_blank" rel="noopener"><span>GitHub</span>/wael6954</a>
         <a href="https://wael-halabi.medium.com" target="_blank" rel="noopener"><span>Medium</span>wael-halabi.medium.com</a>
@@ -229,6 +384,41 @@
       Wael Halabi · Toronto · <a href="./index.html">Ride the 3D version</a>
     </footer>
 
-  </div>
+  </main>
+
+  <script>
+    // Active-section highlighting in the sticky nav. Purely a visual
+    // enhancement — every link is a normal anchor, so navigation and CSS
+    // scroll-behavior already work with this script disabled or failing.
+    if ('IntersectionObserver' in window) {
+      const links = [...document.querySelectorAll('.nav-link')];
+      const byId = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+      const obs = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const link = byId.get(e.target.id);
+          if (!link) continue;
+          links.forEach((l) => l.classList.remove('active'));
+          link.classList.add('active');
+        }
+      }, { rootMargin: '-40% 0px -55% 0px' });
+      document.querySelectorAll('main section[id]').forEach((s) => obs.observe(s));
+    }
+
+    // Copy-to-clipboard fallback for the email link, in case the visitor
+    // has no mail client configured to handle mailto: (common on shared or
+    // work machines) — mailto still works as the primary action.
+    document.querySelectorAll('.copy-btn[data-copy]').forEach((btn) => {
+      const label = btn.querySelector('.copy-label');
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          btn.classList.add('copied');
+          if (label) label.textContent = 'Copied';
+          setTimeout(() => { btn.classList.remove('copied'); if (label) label.textContent = 'Copy'; }, 1800);
+        } catch { /* clipboard API unavailable — mailto link above still works */ }
+      });
+    });
+  </script>
 </body>
 </html>

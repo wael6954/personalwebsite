@@ -1,0 +1,11 @@
+# Local tooling / editor
+.claude/
+.vscode/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Python artifacts (from local dev scripts)
+__pycache__/
+*.pyc
