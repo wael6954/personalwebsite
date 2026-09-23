@@ -33,6 +33,7 @@ const aerialBtn = document.getElementById('aerial-btn')
 const navEl = document.getElementById('nav')
 const panels = [...document.querySelectorAll('.panel')]
 const srAnnouncerEl = document.getElementById('sr-announcer')
+const eggEl = document.getElementById('egg')
 
 // ---------------------------------------------------------------------------
 // Sound: everything is synthesized with WebAudio (no audio files). A soft wind
@@ -133,6 +134,11 @@ const pdfModal = document.getElementById('pdf-modal')
 const pdfFrame = document.getElementById('pdf-frame')
 const pdfClose = document.getElementById('pdf-close')
 const pdfOpen = () => !!pdfModal && !pdfModal.classList.contains('gone')
+
+// Right of Way takes over the whole screen when it is open, so every
+// world-navigation input below bails out while the game has focus.
+const gameOn = () => document.body.classList.contains('game-on')
+
 function openPdf() {
   if (pdfFrame && !pdfFrame.getAttribute('src')) pdfFrame.setAttribute('src', './Wael_Halabi_Resume.pdf')
   if (pdfModal) pdfModal.classList.remove('gone')
@@ -379,7 +385,7 @@ function activeScroller() {
 }
 
 addEventListener('wheel', (e) => {
-  if (pdfOpen()) return
+  if (pdfOpen() || gameOn()) return
   const sc = activeScroller()
   if (panelOpen) {
     // scroll lock: while a popup is open, wheel input only scrolls its own
@@ -402,9 +408,9 @@ addEventListener('wheel', (e) => {
 
 // touch: drag over a panel scrolls it, drag over the world advances sections
 let lastY = null, touchAcc = 0
-addEventListener('touchstart', (e) => { lastY = e.touches[0].clientY; touchAcc = 0 }, { passive: true })
+addEventListener('touchstart', (e) => { if (gameOn()) return; lastY = e.touches[0].clientY; touchAcc = 0 }, { passive: true })
 addEventListener('touchmove', (e) => {
-  if (pdfOpen()) return
+  if (pdfOpen() || gameOn()) return
   if (lastY == null) return
   const dy = lastY - e.touches[0].clientY
   lastY = e.touches[0].clientY
@@ -428,6 +434,7 @@ addEventListener('touchmove', (e) => {
 addEventListener('touchend', () => { lastY = null })
 
 addEventListener('keydown', (e) => {
+  if (gameOn()) return
   if (e.key === 'Escape' && pdfOpen()) { closePdf(); return }
   if (pdfOpen()) return
   if (e.key === 'Escape') { panelOpen = false; return }
@@ -824,6 +831,9 @@ function syncUI() {
     infoBtn.style.top = ((-_iv.y * 0.5 + 0.5) * window.innerHeight) + 'px'
   }
 
+  // the minigame nudge only belongs on the hero beat, and never over the game
+  if (eggEl) eggEl.classList.toggle('show', targetBeat === 0 && settled && !aerial && !panelOpen && !gameOn())
+
   // mobile stand-ins for the 3D name/contact text, shown at their matching beat
   if (isMobile) {
     hero2dEl.classList.toggle('show', targetBeat === 0 && !aerial && settled)
@@ -1184,3 +1194,54 @@ addEventListener('resize', () => {
   if (smokeUniforms) smokeUniforms.uScale.value = ps
   if (leafUniforms) leafUniforms.uScale.value = ps
 })
+
+// ---------------------------------------------------------------------------
+// RIGHT OF WAY — the hidden minigame.
+// Two ways in: the Konami code, or the little nudge that sits under the hero.
+// game.js is only fetched once someone actually asks for it, so the 3D scene
+// pays nothing for it on first load.
+// ---------------------------------------------------------------------------
+let gameHandle = null, gameLoading = false
+
+async function openGame() {
+  if (gameHandle || gameLoading) return
+  gameLoading = true
+  if (eggEl) eggEl.classList.add('found')
+  try {
+    const { mountStreetcarRunner } = await import('./game.js?v=1')
+    const wrap = document.createElement('div')
+    wrap.id = 'game-overlay'
+    document.body.appendChild(wrap)
+    document.body.classList.add('game-on')
+    gameHandle = mountStreetcarRunner(wrap, { onExit: closeGame })
+    if (srAnnouncerEl) srAnnouncerEl.textContent = 'Right of Way opened. Left and right arrows switch lanes, Escape leaves the game.'
+  } catch (err) {
+    console.error('Right of Way failed to load', err)
+    document.body.classList.remove('game-on')
+  }
+  gameLoading = false
+}
+
+function closeGame() {
+  if (!gameHandle) return
+  gameHandle.destroy()
+  gameHandle = null
+  const wrap = document.getElementById('game-overlay')
+  if (wrap) wrap.remove()
+  document.body.classList.remove('game-on')
+  if (eggEl) eggEl.classList.remove('found')
+  if (srAnnouncerEl) srAnnouncerEl.textContent = 'Back to the transit world.'
+}
+
+// Left/right only: the world's own keyboard navigation is bound to up/down,
+// so typing the code never drags the camera through the sections.
+const SECRET = ['arrowright', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'arrowright']
+let secretAt = 0
+addEventListener('keydown', (e) => {
+  if (gameOn()) return
+  const k = e.key.toLowerCase()
+  secretAt = k === SECRET[secretAt] ? secretAt + 1 : (k === SECRET[0] ? 1 : 0)
+  if (secretAt === SECRET.length) { secretAt = 0; openGame() }
+})
+
+if (eggEl) eggEl.addEventListener('click', openGame)

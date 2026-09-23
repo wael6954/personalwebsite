@@ -323,10 +323,37 @@
     #hint .arrow { display:inline-block; animation: bob 1.4s ease-in-out infinite; }
     @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(4px);} }
 
+    /* KING STREET RUNNER: the nudge that makes the hidden minigame findable
+       (the Konami code also opens it), plus the shell the game mounts into.
+       The nudge is a real button so it works on a phone, where there is no
+       keyboard to type the code on. */
+    #egg { position: fixed; bottom: 70px; left: 50%; z-index: 9;
+      transform: translateX(-50%) translateY(6px);
+      display: flex; align-items: center; gap: 8px; cursor: pointer; border: none;
+      background: #fff; border-radius: 999px; padding: 7px 14px; color: var(--ink);
+      box-shadow: 0 4px 14px rgba(0,0,0,.16);
+      font-family: 'Proxima Nova','Montserrat', sans-serif; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .09em; text-transform: uppercase;
+      opacity: 0; pointer-events: none;
+      transition: opacity .5s ease, transform .3s ease, box-shadow .2s ease; }
+    #egg.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+    #egg.show:hover { transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,.24); }
+    #egg .keys { color: var(--projects); letter-spacing: .12em; font-size: 13px; line-height: 1; }
+    #egg .tram { font-size: 13px; }
+
+    #game-overlay { position: fixed; inset: 0; z-index: 80; }
+    /* while the game owns the screen, every piece of site chrome steps aside */
+    body.game-on #nav, body.game-on #aerial-btn, body.game-on #info-btn,
+    body.game-on #day-btn, body.game-on #mute-btn, body.game-on #simple-link,
+    body.game-on #hint, body.game-on #contact3d, body.game-on #hero2d,
+    body.game-on #contact2d, body.game-on #panels, body.game-on #egg { display: none !important; }
+
     @media (max-width: 720px) {
       #hero { padding: 26px 22px; }
       #hint { top: 76px; bottom: auto; }
       .panel { left: 12px; right: 12px; bottom: 14px; width: auto; max-height: 58vh; }
+      #egg { bottom: 32px; }
       #aerial-btn { top: 20px; right: 16px; }
       #nav { right: 12px; gap: 13px; }
       #nav button .txt { display: none; }
@@ -350,6 +377,11 @@
   <nav id="nav"></nav>
 
   <div id="hint"><span>Scroll to explore</span><span class="arrow">↓</span></div>
+
+  <button id="egg" type="button" aria-label="Catch the streetcar: play Right of Way, a streetcar minigame">
+    <span class="tram" aria-hidden="true">🚋</span>
+    <span class="keys" aria-hidden="true">→←→←→→</span>
+  </button>
 
   <div id="panels">
 
@@ -563,6 +595,6 @@
     }
   }
   </script>
-  <script type="module" src="./main.js?v=38"></script>
+  <script type="module" src="./main.js?v=39"></script>
 </body>
 </html>
