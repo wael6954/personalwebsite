@@ -353,7 +353,12 @@
       #hero { padding: 26px 22px; }
       #hint { top: 76px; bottom: auto; }
       .panel { left: 12px; right: 12px; bottom: 14px; width: auto; max-height: 58vh; }
+      /* the arrow glyphs are a hint at the desktop keyboard shortcut — on a
+         phone, with no keyboard, they read as a swipe pattern to trace over
+         the button instead, which isn't wired up and never fires. Hide them
+         so touch is unambiguous: it's just a button, tap it. */
       #egg { bottom: 32px; }
+      #egg .keys { display: none; }
       #aerial-btn { top: 20px; right: 16px; }
       #nav { right: 12px; gap: 13px; }
       #nav button .txt { display: none; }
