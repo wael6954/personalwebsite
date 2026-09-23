@@ -408,9 +408,14 @@ addEventListener('wheel', (e) => {
 
 // touch: drag over a panel scrolls it, drag over the world advances sections
 let lastY = null, touchAcc = 0
-addEventListener('touchstart', (e) => { if (gameOn()) return; lastY = e.touches[0].clientY; touchAcc = 0 }, { passive: true })
+// a tap that starts on the hidden-game nudge must never get read as a world
+// swipe: any wobble past the 46px threshold below would advance targetBeat,
+// which hides #egg (shown only at beat 0) out from under the finger before
+// the tap can land as a click
+const onEgg = (e) => e.target.closest && e.target.closest('#egg')
+addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = e.touches[0].clientY; touchAcc = 0 }, { passive: true })
 addEventListener('touchmove', (e) => {
-  if (pdfOpen() || gameOn()) return
+  if (pdfOpen() || gameOn() || onEgg(e)) return
   if (lastY == null) return
   const dy = lastY - e.touches[0].clientY
   lastY = e.touches[0].clientY
