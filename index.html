@@ -65,8 +65,9 @@
     @media (max-width: 720px) {
       #hero2d, #contact2d { position: fixed; inset: 0; z-index: 6; display: flex;
         flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        padding: 0 28px; pointer-events: none; opacity: 0; transition: opacity .5s ease; }
-      #hero2d.show, #contact2d.show { opacity: 1; }
+        padding: 0 28px; pointer-events: none; opacity: 0; visibility: hidden;
+        transition: opacity .5s ease, visibility 0s linear .5s; }
+      #hero2d.show, #contact2d.show { opacity: 1; visibility: visible; transition: opacity .5s ease, visibility 0s; }
       #hero2d h1, #contact2d h2 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 600;
         color: var(--contact); letter-spacing: -.02em; line-height: 1;
         text-shadow: 0 2px 22px rgba(181, 67, 47, .55); }
