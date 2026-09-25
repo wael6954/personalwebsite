@@ -407,13 +407,13 @@ addEventListener('wheel', (e) => {
 }, { passive: false })
 
 // touch: drag over a panel scrolls it, drag over the world advances sections
-let lastY = null, touchAcc = 0
+let lastY = null, touchAcc = 0, touchStepped = false
 // a tap that starts on the hidden-game nudge must never get read as a world
 // swipe: any wobble past the 46px threshold below would advance targetBeat,
 // which hides #egg (shown only at beat 0) out from under the finger before
 // the tap can land as a click
 const onEgg = (e) => e.target.closest && e.target.closest('#egg')
-addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = e.touches[0].clientY; touchAcc = 0 }, { passive: true })
+addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = e.touches[0].clientY; touchAcc = 0; touchStepped = false }, { passive: true })
 addEventListener('touchmove', (e) => {
   if (pdfOpen() || gameOn() || onEgg(e)) return
   if (lastY == null) return
@@ -422,7 +422,9 @@ addEventListener('touchmove', (e) => {
   const sc = activeScroller()
   if (panelOpen) {
     // scroll lock: same as wheel, keep touch drags confined to the popup
-    if (sc) sc.scrollTop += dy
+    // a drag that starts inside the scroller is already scrolled natively by
+    // the browser (this listener is passive); adding dy again doubled it
+    if (sc && !(e.target.closest && e.target.closest('.panel-scroll'))) sc.scrollTop += dy
     return
   }
   const overPanel = e.target.closest && e.target.closest('.panel')
@@ -430,13 +432,16 @@ addEventListener('touchmove', (e) => {
     const canScroll = dy > 0
       ? sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1
       : sc.scrollTop > 1
-    if (canScroll) return
+    if (canScroll) { touchAcc = 0; return }   // native scroll owns this; don't bank its travel toward a section jump
   }
   if (aerial) exitAerial()
+  if (touchStepped) return   // one section per gesture: a long drag must not chain-jump
+  if (nowMs() < cooldownUntil) return
   touchAcc += dy
-  if (Math.abs(touchAcc) > 46) { setBeat(targetBeat + Math.sign(touchAcc)); touchAcc = 0 }
+  if (Math.abs(touchAcc) > 80) { setBeat(targetBeat + Math.sign(touchAcc)); touchAcc = 0; touchStepped = true }
 }, { passive: true })
-addEventListener('touchend', () => { lastY = null })
+addEventListener('touchend', () => { lastY = null; touchStepped = false })
+addEventListener('touchcancel', () => { lastY = null; touchStepped = false })
 
 addEventListener('keydown', (e) => {
   if (gameOn()) return
