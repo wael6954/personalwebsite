@@ -124,11 +124,14 @@
       display: grid; place-items: center; box-shadow: 0 4px 14px rgba(0,0,0,.16);
       transition: transform .15s ease; }
     #day-btn:hover { transform: scale(1.08) rotate(-12deg); }
-    #simple-link { position: fixed; bottom: 28px; left: 22px; z-index: 12;
-      font-family: 'Montserrat', sans-serif; font-size: 10.5px; letter-spacing: .1em;
-      text-transform: uppercase; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.45);
-      text-decoration: none; opacity: .7; transition: opacity .2s ease; }
-    #simple-link:hover { opacity: 1; text-decoration: underline; }
+    #simple-link { position: fixed; bottom: 22px; left: 22px; z-index: 12;
+      display: flex; align-items: center; gap: 9px; padding: 10px 14px 10px 12px;
+      background: #fff; color: var(--ink); border-radius: 6px;
+      font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,.16); transition: transform .15s ease; }
+    #simple-link::before { content: '\2261'; font-size: 17px; line-height: 1; }
+    #simple-link:hover { transform: translateY(-2px); }
 
     /* Keyboard focus: a clear ring that reads against any part of the 3D
        scene, plus a skip link so keyboard/screen-reader users can bail
@@ -322,6 +325,15 @@
     #hint.gone { opacity: 0; pointer-events: none; }
     #hint .arrow { display:inline-block; animation: bob 1.4s ease-in-out infinite; }
     @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(4px);} }
+    #hint .h-touch { display: none; }
+    #hint .a-side { display: none; }
+    @media (hover: none) and (pointer: coarse) { #hint .a-down { display: none; } #hint .a-side { display: inline; } }
+    @media (hover: none) and (pointer: coarse) {
+      #hint .h-mouse { display: none; }
+      #hint .h-touch { display: inline; }
+      #hint .arrow { animation: nudge 1.6s ease-in-out infinite; }
+    }
+    @keyframes nudge { 0%,100%{ transform: translateX(0);} 50%{ transform: translateX(-5px);} }
 
     /* KING STREET RUNNER: the nudge that makes the hidden minigame findable
        (the Konami code also opens it), plus the shell the game mounts into.
@@ -358,10 +370,14 @@
          the button instead, which isn't wired up and never fires. Hide them
          so touch is unambiguous: it's just a button, tap it. */
       #egg { bottom: 32px; }
+      #simple-link { bottom: 96px; left: 12px; }
       #egg .keys { display: none; }
       #aerial-btn { top: 20px; right: 16px; }
-      #nav { right: 12px; gap: 13px; }
+      #nav { right: 6px; }
       #nav button .txt { display: none; }
+      #nav { gap: 4px; }
+      #nav button { padding: 10px 6px; opacity: .8; }   /* ~44px tap target */
+      #nav button .dot { width: 14px; height: 14px; }
     }
   </style>
 </head>
@@ -381,7 +397,7 @@
 
   <nav id="nav"></nav>
 
-  <div id="hint"><span>Scroll to explore</span><span class="arrow">↓</span></div>
+  <div id="hint"><span class="h-mouse">Scroll to explore</span><span class="h-touch">Swipe to explore</span><span class="arrow"><span class="a-down">↓</span><span class="a-side">←</span></span></div>
 
   <button id="egg" type="button" aria-label="Catch the streetcar: play Right of Way, a streetcar minigame">
     <span class="tram" aria-hidden="true">🚋</span>

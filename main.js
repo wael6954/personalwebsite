@@ -407,13 +407,13 @@ addEventListener('wheel', (e) => {
 }, { passive: false })
 
 // touch: drag over a panel scrolls it, drag over the world advances sections
-let lastY = null, touchAcc = 0, touchStepped = false
+let lastY = null, startX = 0, startY = 0, touchAcc = 0, touchStepped = false
 // a tap that starts on the hidden-game nudge must never get read as a world
 // swipe: any wobble past the 46px threshold below would advance targetBeat,
 // which hides #egg (shown only at beat 0) out from under the finger before
 // the tap can land as a click
 const onEgg = (e) => e.target.closest && e.target.closest('#egg')
-addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = e.touches[0].clientY; touchAcc = 0; touchStepped = false }, { passive: true })
+addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = startY = e.touches[0].clientY; startX = e.touches[0].clientX; touchAcc = 0; touchStepped = false }, { passive: true })
 addEventListener('touchmove', (e) => {
   if (pdfOpen() || gameOn() || onEgg(e)) return
   if (lastY == null) return
@@ -425,6 +425,13 @@ addEventListener('touchmove', (e) => {
     // a drag that starts inside the scroller is already scrolled natively by
     // the browser (this listener is passive); adding dy again doubled it
     if (sc && !(e.target.closest && e.target.closest('.panel-scroll'))) sc.scrollTop += dy
+    return
+  }
+  // sideways swipe: left = next section, right = previous
+  const tdx = e.touches[0].clientX - startX, tdy = e.touches[0].clientY - startY
+  if (!touchStepped && Math.abs(tdx) > 80 && Math.abs(tdx) > 1.5 * Math.abs(tdy)) {
+    if (nowMs() >= cooldownUntil) { if (aerial) exitAerial(); setBeat(targetBeat + (tdx < 0 ? 1 : -1)) }
+    touchStepped = true
     return
   }
   const overPanel = e.target.closest && e.target.closest('.panel')
@@ -1255,3 +1262,16 @@ addEventListener('keydown', (e) => {
 })
 
 if (eggEl) eggEl.addEventListener('click', openGame)
+
+// --- Idle hint: if someone sits on the hero without moving, bring the hint back ---
+let hintIdle = 0
+function armHint() {
+  clearTimeout(hintIdle)
+  hintEl.classList.add('gone')
+  if (!hasScrolled) hintEl.classList.remove('gone')   // untouched: the original hint is still up
+  hintIdle = setTimeout(() => {
+    if (targetBeat === 0 && !panelOpen && !gameOn() && !pdfOpen()) hintEl.classList.remove('gone')
+  }, 7000)
+}
+for (const ev of ['wheel', 'touchstart', 'keydown', 'pointerdown']) addEventListener(ev, armHint, { passive: true })
+armHint()
