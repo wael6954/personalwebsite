@@ -185,9 +185,6 @@
       opacity: 0; transform: translateY(18px); pointer-events: none;
       transition: opacity .4s ease, transform .4s ease; }
     .panel.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    /* thin accent stripe across the top edge of the card */
-    .panel::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--accent, var(--ink)); z-index: 1; }
 
     .panel-scroll { position: relative; overflow-y: auto; padding: 32px 30px 34px;
       max-height: 76vh; overscroll-behavior: contain;
@@ -217,18 +214,13 @@
       font-weight: 400 !important; line-height: 1.42 !important; color: var(--ink) !important;
       margin-bottom: 18px !important; font-variation-settings: "opsz" 17, "SOFT" 40; }
 
-    .stat-row { display:flex; flex-wrap:wrap; gap: 6px; margin-top: 14px; }
-    .chip { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500;
-      background: rgba(22,33,43,.06); color: var(--ink); padding: 4px 10px; border-radius: 2px;
-      letter-spacing: .02em; }
-
     .item { padding: 18px 0; border-top: 0.5px solid rgba(22, 33, 43, 0.15); }
     .item:first-of-type { border-top: none; padding-top: 4px; }
     .item h3 { font-family: 'Montserrat', -apple-system, sans-serif; font-weight: 500; font-size: 18px;
       line-height: 1.15; color: var(--ink); margin-bottom: 4px; letter-spacing: -.01em;
       font-variation-settings: "opsz" 18, "SOFT" 40; }
     .item .meta { font-family: 'Montserrat', sans-serif; font-size: 10.5px; font-weight: 500;
-      letter-spacing: .14em; color: var(--accent, var(--ink)); text-transform: uppercase; margin-bottom: 8px; }
+      letter-spacing: .14em; color: var(--ink-soft); text-transform: uppercase; margin-bottom: 8px; }
     .item .org { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 13.5px; font-weight: 500; color: var(--ink); }
     .item .dates { font-family: 'Montserrat', sans-serif; font-size: 11.5px;
       color: var(--ink-soft); margin: 2px 0 8px; }
@@ -237,8 +229,8 @@
     .item li { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 12.5px; line-height: 1.55;
       color: var(--ink-soft); padding-left: 14px; position: relative; }
     .item li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 1px;
-      background: var(--accent, var(--ink)); }
-    .item a.read { display: inline-block; margin-top: 4px; color: var(--accent, var(--ink));
+      background: var(--ink-soft); }
+    .item a.read { display: inline-block; margin-top: 4px; color: var(--ink);
       font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: .04em;
       text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
     .item a.read:hover { opacity: .65; }
@@ -246,9 +238,10 @@
     .skillgroup { margin-bottom: 14px; }
     .skillgroup h4 { font-family: 'Montserrat', sans-serif; font-size: 10.5px; font-weight: 500;
       letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 7px; }
-    .tags { display:flex; flex-wrap:wrap; gap: 5px; }
-    .tag { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 500;
-      background: rgba(22,33,43,.06); color: var(--ink); padding: 4px 9px; border-radius: 2px; }
+    .tags { display:flex; flex-wrap:wrap; gap: 3px 0; }
+    .tag { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--ink); }
+    .tag:not(:last-child)::after { content: "·"; margin: 0 8px; opacity: .45; }
     .awards-list { display: flex; flex-direction: column; gap: 6px; }
     .awards-list div { font-family: 'Proxima Nova', 'Montserrat', sans-serif; font-size: 13px; color: var(--ink); }
 
@@ -413,15 +406,10 @@
         <span class="eyebrow">About</span>
         <h2>About me</h2>
         <p class="intro">I'm interested in solving transportation problems at the intersection of engineering, analytics, and technology.</p>
-        <p>At the <strong>City of Toronto</strong>, I've worked on projects ranging from <strong>FIFA World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work has supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
+        <p>I'm finishing my civil engineering degree at the <strong>University of Toronto</strong> in 2027. Over a year at the <strong>City of Toronto</strong>, I worked in the Data &amp; Analytics Unit, across data collection, operations, and analytics. Projects ranged from <strong>FIFA World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
         <p>What I enjoy most are problems where the answer isn't obvious from the data alone: understanding congestion, improving transit reliability, estimating travel demand, or evaluating policy. I like combining engineering judgment with analytical tools to help cities make better decisions.</p>
+        <p>I also like building under a deadline. I <strong>won the ShiftED hackathon</strong> with an AI patient-monitoring platform and placed <strong>10th of 328</strong> at the NSRI Summer Research Hackathon.</p>
         <p>Outside of engineering, I'm usually building side projects, exploring new tech, or playing sports.</p>
-        <div class="stat-row">
-          <span class="chip">B.A.Sc. Civil Eng. (Honours) '27</span>
-          <span class="chip">CGPA 3.50</span>
-          <span class="chip">Dean's List ×3</span>
-          <span class="chip">English / Arabic</span>
-        </div>
       </div>
     </section>
 
@@ -431,12 +419,6 @@
         <span class="eyebrow">Projects</span>
         <h2>Featured work</h2>
         <p class="intro">Engineering solutions for transportation, infrastructure, and healthcare.</p>
-        <div class="item">
-          <h3>Forecasting AI's Effect on Hospital Costs by Analogy to Industrialization and the Dot-Com Era</h3>
-          <div class="meta">Jul 2026 · Healthcare Economics · Data Analysis · 🏆 Top 10 of 328</div>
-          <p>Placed <strong>10th out of 328 participants</strong> (100+ teams) at the <strong>NSRI Summer Research Hackathon</strong>. Tested AI's likely effect on hospital costs against two historical analogies, slow post-electrification productivity gains vs. the dot-com boom-and-bust, using Medicare Cost Report data across <strong>~6,000 hospitals (2011–2024)</strong>. Found administrative cost share has climbed steadily since EHR saturation with no reversal, forecasted to keep rising through 2034, while clinical AI funding already shows classic bubble markers.</p>
-          <a class="read" href="https://drive.google.com/file/d/10VRXw-quCoEKi6b_xzLqa2NRpXvIypUe/view?pli=1" target="_blank" rel="noopener">Read the report ↗</a>
-        </div>
         <div class="item">
           <h3>Automated Speed Enforcement Evaluation</h3>
           <div class="meta">2026 · Python · SQL · Transportation Analytics</div>
@@ -448,12 +430,6 @@
           <p>Developed automated congestion monitoring workflows supporting the <strong>City of Toronto</strong>'s transportation planning for the <strong>FIFA World Cup</strong>. Built repeatable Python and SQL pipelines to monitor network performance, identify congestion trends, and generate operational insights.</p>
         </div>
         <div class="item">
-          <h3>Predicting Streetcar Delays in Toronto</h3>
-          <div class="meta">2025 · Python · Machine Learning</div>
-          <p>Built ML models on <strong>over ten years</strong> of TTC streetcar delay data. Random Forest models reached <strong>R² up to 0.98</strong> and <strong>MAE as low as 0.73 min</strong>, showing how historical transit data can improve operational planning.</p>
-          <a class="read" href="https://wael-halabi.medium.com/predicting-streetcar-delays-in-toronto-using-historical-data-and-machine-learning-844cce83a09a" target="_blank" rel="noopener">Read the write-up ↗</a>
-        </div>
-        <div class="item">
           <h3>City-Wide Bicycle Demand Estimation</h3>
           <div class="meta">2025 · Python · SQL · PostgreSQL</div>
           <p>A city-scale pipeline for <strong>Annual Average Daily Bicycle Traffic (AADT)</strong>, combining temporal normalization, seasonal adjustment, and confidence interval estimation to support cycling infrastructure planning.</p>
@@ -462,6 +438,24 @@
           <h3>Accessibility Modeling for Planning</h3>
           <div class="meta">2025 · R · QGIS</div>
           <p>Reproducible geospatial workflows computing gravity-based and cumulative accessibility measures across transportation networks, with GIS visualizations supporting planning and accessibility analysis.</p>
+        </div>
+        <div class="item">
+          <h3>Predicting Streetcar Delays in Toronto</h3>
+          <div class="meta">2025 · Python · Machine Learning</div>
+          <p>Analyzed <strong>over ten years</strong> of Toronto streetcar data to identify delay patterns across multiple routes. Built and validated Linear Regression and Random Forest models in Python (Pandas, scikit-learn) to predict delay durations, with Random Forest outperforming on complex, non-linear relationships. Produced a route-level performance report with insights for scheduling and service optimization.</p>
+          <a class="read" href="https://wael-halabi.medium.com/predicting-streetcar-delays-in-toronto-using-historical-data-and-machine-learning-844cce83a09a" target="_blank" rel="noopener">Read the write-up ↗</a>
+        </div>
+        <div class="item">
+          <h3>Streetcar Route Operations Analysis</h3>
+          <div class="meta">2024 · Python · Pandas · Field Data</div>
+          <p>Studied a Toronto streetcar route over <strong>three months</strong>, collecting <strong>150+ multi-point data entries</strong> to inform operational improvements. Processed the data with Python and Pandas to produce visual reports on traffic flow and scheduling patterns, and published the findings on Medium.</p>
+          <a class="read" href="https://wael-halabi.medium.com/analysis-of-the-toronto-510-streetcar-route-patterns-and-operational-dynamics-january-2024-to-9057710a8b00" target="_blank" rel="noopener">Read the write-up ↗</a>
+        </div>
+        <div class="item">
+          <h3>Forecasting AI's Effect on Hospital Costs by Analogy to Industrialization and the Dot-Com Era</h3>
+          <div class="meta">Jul 2026 · Healthcare Economics · Data Analysis · 🏆 Top 10 of 328</div>
+          <p>Placed <strong>10th out of 328 participants</strong> (100+ teams) at the <strong>NSRI Summer Research Hackathon</strong>. Tested AI's likely effect on hospital costs against two historical analogies, slow post-electrification productivity gains vs. the dot-com boom-and-bust, using Medicare Cost Report data across <strong>~6,000 hospitals (2011–2024)</strong>. Found administrative cost share has climbed steadily since EHR saturation with no reversal, forecasted to keep rising through 2034, while clinical AI funding already shows classic bubble markers.</p>
+          <a class="read" href="https://drive.google.com/file/d/10VRXw-quCoEKi6b_xzLqa2NRpXvIypUe/view?pli=1" target="_blank" rel="noopener">Read the report ↗</a>
         </div>
         <div class="item">
           <h3>ShiftED, Dynamic Triage Monitoring</h3>
@@ -479,7 +473,7 @@
         <div class="item">
           <h3>Data Science Intern</h3>
           <div class="org">Transportation Services, City of Toronto</div>
-          <div class="dates">September 2025 to Present</div>
+          <div class="dates">September 2025 to September 2026</div>
           <ul>
             <li>Helped build the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
             <li>Built automated congestion monitoring tools supporting <strong>FIFA World Cup</strong> transportation planning.</li>
@@ -530,11 +524,11 @@
       <div class="panel-scroll">
         <span class="eyebrow">Résumé</span>
         <h2>Skills &amp; résumé</h2>
-        <div class="skillgroup"><h4>Programming</h4><div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">PostgreSQL</span><span class="tag">R</span></div></div>
-        <div class="skillgroup"><h4>Transportation &amp; Geospatial</h4><div class="tags"><span class="tag">QGIS</span><span class="tag">ArcGIS</span><span class="tag">Transportation Analytics</span><span class="tag">Accessibility Modeling</span><span class="tag">Traffic Data Analysis</span></div></div>
+        <div class="skillgroup"><h4>Programming</h4><div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">PostgreSQL</span><span class="tag">R</span><span class="tag">psycopg2</span><span class="tag">SQLAlchemy</span></div></div>
+        <div class="skillgroup"><h4>Transportation &amp; Geospatial</h4><div class="tags"><span class="tag">EMME</span><span class="tag">MATSim</span><span class="tag">OpenPath</span><span class="tag">QGIS</span><span class="tag">ArcGIS</span><span class="tag">Transportation Analytics</span><span class="tag">Accessibility Modeling</span><span class="tag">Traffic Data Analysis</span></div></div>
         <div class="skillgroup"><h4>Machine Learning &amp; Data</h4><div class="tags"><span class="tag">scikit-learn</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SciPy</span><span class="tag">Matplotlib</span></div></div>
         <div class="skillgroup"><h4>Engineering Software</h4><div class="tags"><span class="tag">AutoCAD</span><span class="tag">Autodesk Revit</span><span class="tag">Rhino 3D</span><span class="tag">SketchUp</span></div></div>
-        <div class="skillgroup"><h4>Tools</h4><div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">AWS</span><span class="tag">DBeaver</span><span class="tag">Excel</span><span class="tag">Power Automate</span><span class="tag">SSH</span><span class="tag">LaTeX</span></div></div>
+        <div class="skillgroup"><h4>Tools</h4><div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">AWS</span><span class="tag">DBeaver</span><span class="tag">Excel</span><span class="tag">Power Automate</span><span class="tag">SSH</span><span class="tag">LaTeX</span><span class="tag">Project Management</span></div></div>
         <div class="item" style="margin-top:4px;">
           <h3>Education</h3>
           <div class="org">University of Toronto</div>
