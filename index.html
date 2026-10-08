@@ -345,7 +345,7 @@
     #egg.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
     #egg.show:hover { transform: translateX(-50%) translateY(-2px);
       box-shadow: 0 8px 20px rgba(0,0,0,.24); }
-    #egg .keys { color: var(--projects); letter-spacing: .12em; font-size: 13px; line-height: 1; }
+    #egg .label { white-space: nowrap; }
     #egg .tram { font-size: 13px; }
 
     #game-overlay { position: fixed; inset: 0; z-index: 80; }
@@ -364,8 +364,7 @@
          the button instead, which isn't wired up and never fires. Hide them
          so touch is unambiguous: it's just a button, tap it. */
       #egg { bottom: 32px; }
-      #simple-link { bottom: 96px; left: 12px; }
-      #egg .keys { display: none; }
+      #simple-link { top: 20px; bottom: auto; left: 12px; }
       #aerial-btn { top: 20px; right: 16px; }
       #nav { right: 6px; }
       #nav button .txt { display: none; }
@@ -395,7 +394,7 @@
 
   <button id="egg" type="button" aria-label="Catch the streetcar: play Right of Way, a streetcar minigame">
     <span class="tram" aria-hidden="true">🚋</span>
-    <span class="keys" aria-hidden="true">→←→←→→</span>
+    <span class="label">Game to pass the time</span>
   </button>
 
   <div id="panels">
@@ -611,6 +610,6 @@
     }
   }
   </script>
-  <script type="module" src="./main.js?v=39"></script>
+  <script type="module" src="./main.js?v=40"></script>
 </body>
 </html>
