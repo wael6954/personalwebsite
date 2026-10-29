@@ -504,8 +504,21 @@ const PLOTLY_SRC = 'https://cdn.jsdelivr.net/npm/plotly.js-gl3d-dist-min@2.27.0/
 let plotlyLoad;
 const loadPlotly = () => window.Plotly ? Promise.resolve() : (plotlyLoad = plotlyLoad || new Promise((ok, fail) => {
   const s = document.createElement('script'); s.src = PLOTLY_SRC; s.onload = ok; s.onerror = () => { plotlyLoad = null; fail(); }; document.head.appendChild(s); }));
+// The first draw costs about 1.5 s (WebGL context and shader setup, one blocking chunk). On desktop it is done once ahead of time,
+// in the real plot container parked off-screen, and only after a few quiet seconds, so it does not land on someone mid-scroll.
+let lastInput = 0, warmTries = 0;
+['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(e => addEventListener(e, () => { lastInput = performance.now(); }, { passive: true, capture: true }));
+function warm3() {
+  const sec = $('#v-space'), pl = $('#plot3');
+  if (!window.Plotly || !sec.hidden || pl.data) return;  // already open or drawn
+  if ((document.hidden || performance.now() - lastInput < 2500) && ++warmTries < 12) return void setTimeout(warm3, 1500);
+  if (document.hidden) return;
+  sec.hidden = false; sec.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;visibility:hidden;pointer-events:none';
+  try { draw3(); } finally { setTimeout(() => { sec.style.cssText = ''; sec.hidden = true; }, 0); }
+}
 addEventListener('load', () => { const c = navigator.connection; if (c && (c.saveData || /2g|3g/.test(c.effectiveType))) return;
-  (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() => loadPlotly().catch(() => {}), { timeout: 4000 }); });
+  const warm = !matchMedia('(pointer: coarse)').matches && innerWidth >= 900;
+  (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() => loadPlotly().then(() => { if (warm) setTimeout(warm3, 1500); }).catch(() => {}), { timeout: 4000 }); });
 const draw3 = () => {
   $('#s3who').hidden = v3 === 'gal' || v3 === 'duo'; $('#s3col').hidden = v3 !== 'gal'; $('#f3').hidden = v3 === 'gal'; $('#f3showrow').hidden = v3 !== 'space';
   const pl = $('#plot3');
