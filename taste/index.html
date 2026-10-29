@@ -96,25 +96,17 @@ button.btn[aria-pressed=true]{background:var(--raise);box-shadow:var(--shadow)}
 .head>div:first-child{min-width:0;max-width:64ch}
 /* pipeline */
 .flow{display:flex;flex-direction:column}
-.stage{display:grid;grid-template-columns:28px minmax(0,1fr);gap:var(--s3);border-top:1px solid var(--line)}
-.stage:first-child{border-top:0}
-.stage .dot{font:500 13px/1.5 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink3);text-align:right;padding-top:var(--s3)}
-.stage.done .dot{color:var(--good)}
-.stage details{min-width:0}
-.stage summary{list-style:none;cursor:pointer;padding:var(--s3) 0;display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
-.stage summary::-webkit-details-marker{display:none}
-.stage summary::after{content:"";width:6px;height:6px;border-right:1.5px solid var(--ink3);border-bottom:1.5px solid var(--ink3);transform:rotate(45deg);transition:transform var(--t) var(--ease);align-self:center;margin-left:var(--s1)}
-.stage details[open] summary::after{transform:rotate(225deg)}
-.stage summary b{font-size:15px;font-weight:600}
-.stage summary .where{font:12px var(--mono);color:var(--ink3)}
-.stage summary .k{margin-left:auto;font-size:13px;color:var(--ink2)}
-.stage .body{padding:0 0 var(--s4);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s4) var(--s6);font-size:13.5px;color:var(--ink2)}
-.stage .body h4{font:500 12px var(--sans);color:var(--ink3);margin:0 0 var(--s1)}
-.stage .body p,.stage .body ul{margin:0}.stage .body ul{padding-left:18px}
-.stage .body code{font:12px var(--mono);background:var(--fill);padding:1px 5px;border-radius:4px;word-break:break-word}
-.stage .q{border-left:2px solid var(--line);padding-left:var(--s3)}
-.chk{display:flex;gap:var(--s2);align-items:center;font-size:13px;color:var(--ink2);grid-column:1/-1;cursor:pointer}
-.chk input{accent-color:var(--accent)}
+.stage{display:grid;grid-template-columns:28px minmax(0,1fr);gap:var(--s3);padding:var(--s5) 0;border-top:1px solid var(--line)}
+.stage:first-child{border-top:0;padding-top:0}
+.stage .dot{font:500 13px/1.6 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink3);text-align:right}
+.shead{display:flex;gap:var(--s3);align-items:baseline;flex-wrap:wrap}
+.shead h3{margin:0;font-size:16px}
+.shead .k{margin-left:auto;font-size:13px;color:var(--ink3)}
+.stage p{margin:var(--s2) 0 0;font-size:14px;color:var(--ink2);max-width:72ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s4) var(--s6);margin-top:var(--s3)}
+.cols h4{font:500 12px var(--sans);color:var(--ink3);margin:0}
+.cols p{margin-top:var(--s1);font-size:13.5px}
+.stage code{font:12px var(--mono);background:var(--fill);padding:1px 5px;border-radius:4px;word-break:break-word}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
 th{font:500 12px/1.3 var(--sans);color:var(--ink3);text-align:left;padding:var(--s2) var(--s3) var(--s2) 0;border-bottom:1px solid var(--line)}
 td{padding:var(--s2) var(--s3) var(--s2) 0;border-bottom:1px solid var(--grid);vertical-align:top}
@@ -206,8 +198,8 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 <!-- ============ PIPELINE ============ -->
 <section class="view" id="v-pipeline" hidden>
  <div class="card">
-  <h2>The pipeline, stage by stage</h2>
-  <p class="sub">Each stage opens to show what goes in, what comes out, the numbers to sanity-check, the decision made there, and what is still open. A stage can be ticked once it has been reviewed (saved in this browser only). The same walkthrough is in <code class="mono">PIPELINE.md</code> in the repo.</p>
+  <h2>How it works</h2>
+  <p class="sub">How the model is built, from the Beli lists and Yelp reviews to the group picks.</p>
   <div class="flow" id="flow"></div>
  </div>
 </section>
@@ -627,15 +619,22 @@ const STAGES = [
   "run": "python app_data.py && python build_app.py"
  }
 ];
+// Plain-language "in and out" lines for this page (the file-level versions live in PIPELINE.md).
+const PLAIN_IO = {
+  lists: 'Beli screenshots \u2192 a cleaned list for each person \u2192 every place with its percentile, area, price and cuisine.',
+  match: 'Restaurant names and areas \u2192 Yelp search results \u2192 the matching Yelp page for each place.',
+  reviews: 'Each matched Yelp page \u2192 a set of reviews per restaurant, kept outside the repo.',
+  embed: 'Raw reviews \u2192 individual sentences, each with a meaning vector and a positive, neutral or negative label.',
+  topics: 'Sentences with their vectors and labels \u2192 166 named topics, each tagged with an aspect.',
+  features: 'Sentences and topics \u2192 24 numbers per restaurant: how positive and how much talk for each of 12 aspects.',
+  model: 'Restaurant features and percentiles \u2192 one prediction model per person, plus the clusters and accuracy results.',
+  recs: "Each person's predictions \u2192 a ranked list for every group rule.",
+  ref: 'Yelp searches in the same areas \u2192 326 new places with reviews, features and predictions.',
+  viz: 'All results \u2192 this single web page, with the data inside it.'
+};
 function drawFlow() {
-  const done = store('reviewed') || {};
-  $('#flow').innerHTML = STAGES.map((s, i) => `<div class="stage ${done[s.id] ? 'done' : ''}" data-id="${s.id}"><div class="dot">${done[s.id] ? '✓' : i + 1}</div>
-   <details><summary><b>${esc(s.name)}</b><span class="where">${esc(s.where)}</span><span class="k">${esc(s.key)}</span></summary><div class="body">
-   <div><h4>What it does</h4><p>${s.what}</p></div><div><h4>In → out</h4><p>${s.io}</p></div>
-   <div><h4>Check</h4><ul>${s.check.map(c => `<li>${c}</li>`).join('')}</ul></div><div><h4>Decided</h4><p>${s.decided}</p></div>
-   <div class="q"><h4>Open question</h4><p>${s.open}</p></div><div><h4>Run</h4><p><code>${esc(s.run)}</code></p></div>
-   <label class="chk"><input type="checkbox" ${done[s.id] ? 'checked' : ''}> Reviewed</label></div></details></div>`).join('');
-  $$('#flow .chk input').forEach(cb => cb.onchange = () => { const id = cb.closest('.stage').dataset.id, d = store('reviewed') || {}; d[id] = cb.checked; store('reviewed', d); const st = cb.closest('.stage'); st.classList.toggle('done', cb.checked); st.querySelector('.dot').textContent = cb.checked ? '✓' : STAGES.findIndex(s => s.id === id) + 1; });
+  $('#flow').innerHTML = STAGES.map((s, i) => `<article class="stage"><div class="dot">${i + 1}</div><div><div class="shead"><h3>${esc(s.name)}</h3><span class="k">${esc(s.key)}</span></div>
+   <p>${s.what}</p><div class="cols"><div><h4>In and out</h4><p>${PLAIN_IO[s.id] || s.io}</p></div><div><h4>Why it was done this way</h4><p>${s.decided}</p></div></div></div></article>`).join('');
 }
 
 // ---------- checks ----------
