@@ -10,6 +10,7 @@ Everything is flat-color low-poly geometry with the color baked into the GLB mat
 |---|---|
 | `index.html` + `main.js` | The web app. Scene setup, the scrolljack tour, animations, sound, and all the UI live here. |
 | `simple.html` | A plain-HTML version of the whole portfolio. It loads automatically when the browser has no WebGL or JavaScript is off, and there's a "Simple version" link in the corner. |
+| `taste/index.html` | The interactive app for the Restaurant Taste Model project (a copy of `app/index.html` from the `taste-test` repo, with a button back to this site). |
 | `world.glb` | The town. Ring road and tram track, buildings facing a central park with a pond, a walled fountain, four labeled section signs, trees, streetlamps, ducks, townsfolk, a dock, and a small fleet of sailboats out on the sea. |
 | `tram.glb` | The red streetcar. It rides the ring and eases to a stop at the shelter each lap. |
 | `sky.glb` | Clouds and a bird flock that drift above the town. |
