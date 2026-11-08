@@ -1,5 +1,7 @@
 # Transit World
 
+**Live at [waelhalabi.com](https://waelhalabi.com).** This repo is that site. The domain is a separate purchase, pointed at GitHub Pages, which serves the `main` branch of this repo (the `CNAME` file holds the domain). Pushing to `main` updates the live site within a minute or two.
+
 An interactive 3D portfolio for Wael Halabi, built as a low-poly transit town you scroll through. It's a single static page that loads a hand-modeled Blender world into a three.js scene and then rides you around it on rails. No build step, no framework. Open the page and it runs.
 
 Everything is flat-color low-poly geometry with the color baked into the GLB materials, so the assets stay small. One unit is one metre, and the exported models are Y-up.
@@ -95,5 +97,7 @@ Fonts are Montserrat for headings and labels, and Proxima Nova for body with Mon
 Plain three.js (r0.160) loaded from the local `vendor/` folder through an import map, GLTFLoader and DRACOLoader for the Draco-compressed GLBs, and WebAudio for the sound. No bundler, no framework. The geometry is all original work made in Blender, so nothing here needs attribution.
 
 ## Deploying
+
+The live site at waelhalabi.com is deployed this way: the domain is bought separately and pointed at GitHub Pages, which serves the root of the `main` branch, and `CNAME` holds the domain. There is no build step, so a push is the deploy. Pages also serves `foo.html` at `/foo`, which is why the site's links have no `.html`.
 
 It's a static site, so any static host works. Point the host at this folder and serve `index.html`. GitHub Pages, Netlify, Vercel as a static project, or Cloudflare Pages all handle it with no build command. three.js and the Draco decoder are bundled in `vendor/`, so the only thing the site fetches from outside is the Montserrat webfont, and that quietly falls back to a system font if it can't load.
