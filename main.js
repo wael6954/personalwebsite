@@ -22,7 +22,7 @@ function webglOK() {
     return !!(c.getContext('webgl2') || c.getContext('webgl'))
   } catch (e) { return false }
 }
-if (!webglOK()) location.replace('./simple.html')
+if (!webglOK()) location.replace('./simple')
 
 const app = document.getElementById('app')
 const loadingEl = document.getElementById('loading')

@@ -375,7 +375,7 @@
   </style>
 </head>
 <body>
-  <a class="skip-link" href="./simple.html">Skip to accessible simple version</a>
+  <a class="skip-link" href="./simple">Skip to accessible simple version</a>
   <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <div id="app"></div>
@@ -386,7 +386,7 @@
 
   <button id="day-btn" aria-label="Switch to night">🌙</button>
   <button id="mute-btn" aria-label="Mute sound">🔊</button>
-  <a id="simple-link" href="./simple.html">Simple version</a>
+  <a id="simple-link" href="./simple">Simple version</a>
 
   <nav id="nav"></nav>
 
@@ -465,8 +465,15 @@
           <h3>Restaurant Taste Model</h3>
           <div class="meta">2026 · Proof of concept · Python · scikit-learn · NLP</div>
           <p>A proof of concept that predicts how two friends would rank Toronto restaurants from the way Yelp reviewers describe them. It embeds <strong>37,509 review sentences</strong>, groups them into 166 topics, and fits a ridge regression per person on 24 aspect features, then combines both predictions into group picks. Held-out accuracy is 0.26 and 0.38 (Spearman) against 0.17 and 0.20 for random guessing, confirmed with a permutation test. Built on two people's lists as a test of the approach, so the sample is small.</p>
-          <a class="read" href="./taste/index.html">Open the interactive app ↗</a>
+          <a class="read" href="./taste/">Open the interactive app ↗</a>
           <a class="read" href="https://github.com/wael6954/taste-test" target="_blank" rel="noopener">View the code ↗</a>
+        </div>
+        <div class="item">
+          <h3>Prioritizing Wildlife Crossing Sites on Alberta Highways</h3>
+          <div class="meta">2026 · CME538 team project · Python · GeoPandas · Statistical Modelling</div>
+          <p>Led the analysis and modelling for a team project that ranks <strong>29,868 km</strong> of Alberta highway by wildlife-vehicle collision risk, to show where crossing structures would prevent the most collisions. Built a reproducible 13-stage pipeline that cuts the network into <strong>15,000 segments</strong>, snaps <strong>52,000 carcass records</strong> onto them, and joins road, traffic, habitat, terrain and animal-abundance data. A negative binomial model scores every segment, validated on highways and years it never saw: the top 10% of segments capture <strong>48.5%</strong> of observed records, nearly five times random. Benchmarked against boosted trees, hurdle, LDA and logistic models, and checked for data leakage. Results feed an interactive risk map.</p>
+          <a class="read" href="./wildlife-risk/map">Open the interactive risk map ↗</a>
+          <a class="read" href="./wildlife-risk/pipeline">See the pipeline diagram ↗</a>
         </div>
       </div>
     </section>
@@ -605,7 +612,7 @@
   </div>
   <noscript>
     <div style="position:fixed;inset:0;z-index:99;background:#bfe3f2;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#22303f;">
-      <p>This portfolio needs JavaScript. <a href="./simple.html">View the simple version</a></p>
+      <p>This portfolio needs JavaScript. <a href="./simple">View the simple version</a></p>
     </div>
   </noscript>
 
@@ -617,6 +624,6 @@
     }
   }
   </script>
-  <script type="module" src="./main.js?v=40"></script>
+  <script type="module" src="./main.js?v=41"></script>
 </body>
 </html>

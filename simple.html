@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wael Halabi</title>
   <meta name="description" content="Wael Halabi is a civil engineering student at the University of Toronto working in transportation, analytics, and machine learning." />
-  <link rel="canonical" href="https://waelhalabi.com/simple.html" />
+  <link rel="canonical" href="https://waelhalabi.com/simple" />
   <meta property="og:title" content="Wael Halabi | Transit World (Simple)" />
   <meta property="og:description" content="Civil engineering student at the University of Toronto. Transportation, analytics, and machine learning." />
   <meta property="og:image" content="https://waelhalabi.com/og.jpg" />
-  <meta property="og:url" content="https://waelhalabi.com/simple.html" />
+  <meta property="og:url" content="https://waelhalabi.com/simple" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Wael Halabi | Transit World (Simple)" />
@@ -170,7 +170,7 @@
     #s-contact .eyebrow { color: var(--contact); }
 
     @media print {
-      #site-nav, .to3d, footer a[href="./index.html"], .bg-fx { display: none; }
+      #site-nav, .to3d, footer a[href="./"], .bg-fx { display: none; }
       body { background: #fff; color: #000; }
     }
   </style>
@@ -198,7 +198,7 @@
     <span class="kicker">Transit World · Simple version</span>
     <h1>Wael Halabi</h1>
     <p class="tagline">Civil engineering at the University of Toronto. Transportation, analytics, and machine learning.</p>
-    <a class="to3d" href="./index.html">Ride the 3D version →</a>
+    <a class="to3d" href="./">Ride the 3D version →</a>
   </header>
 
   <nav id="site-nav" aria-label="Section navigation">
@@ -264,6 +264,9 @@
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
           Top 10 of 328
         </div>
+        <p>Placed <strong>10th out of 328 participants</strong> (100+ teams) at the <strong>NSRI Summer Research Hackathon</strong>. Tested AI's likely effect on hospital costs against two historical analogies, slow post-electrification productivity gains vs. the dot-com boom-and-bust, using Medicare Cost Report data across <strong>~6,000 hospitals (2011–2024)</strong>. Found administrative cost share has climbed steadily since EHR saturation with no reversal, forecasted to keep rising through 2034, while clinical AI funding already shows classic bubble markers.</p>
+        <p><a href="https://drive.google.com/file/d/10VRXw-quCoEKi6b_xzLqa2NRpXvIypUe/view?pli=1" target="_blank" rel="noopener">Read the report ↗</a></p>
+      </div>
       <div class="item">
         <h3>ShiftED, Dynamic Triage Monitoring</h3>
         <div class="meta">2026 · AI/ML · Healthcare ·
@@ -276,7 +279,13 @@
         <h3>Restaurant Taste Model</h3>
         <div class="meta">2026 · Proof of concept · Python · scikit-learn · NLP</div>
         <p>A proof of concept that predicts how two friends would rank Toronto restaurants from the way Yelp reviewers describe them. It embeds <strong>37,509 review sentences</strong>, groups them into 166 topics, and fits a ridge regression per person on 24 aspect features, then combines both predictions into group picks. Held-out accuracy is 0.26 and 0.38 (Spearman) against 0.17 and 0.20 for random guessing, confirmed with a permutation test. Built on two people's lists as a test of the approach, so the sample is small.</p>
-        <p><a href="./taste/index.html">Open the interactive app</a> &nbsp;·&nbsp; <a href="https://github.com/wael6954/taste-test" target="_blank" rel="noopener">View the code ↗</a></p>
+        <p><a href="./taste/">Open the interactive app</a> &nbsp;·&nbsp; <a href="https://github.com/wael6954/taste-test" target="_blank" rel="noopener">View the code ↗</a></p>
+      </div>
+      <div class="item">
+        <h3>Prioritizing Wildlife Crossing Sites on Alberta Highways</h3>
+        <div class="meta">2026 · CME538 team project · Python · GeoPandas · Statistical Modelling</div>
+        <p>Led the analysis and modelling for a team project that ranks <strong>29,868 km</strong> of Alberta highway by wildlife-vehicle collision risk, to show where crossing structures would prevent the most collisions. Built a reproducible 13-stage pipeline that cuts the network into <strong>15,000 segments</strong>, snaps <strong>52,000 carcass records</strong> onto them, and joins road, traffic, habitat, terrain and animal-abundance data. A negative binomial model scores every segment, validated on highways and years it never saw: the top 10% of segments capture <strong>48.5%</strong> of observed records, nearly five times random. Benchmarked against boosted trees, hurdle, LDA and logistic models, and checked for data leakage. Results feed an interactive risk map.</p>
+        <p><a href="./wildlife-risk/map">Open the interactive risk map</a> &nbsp;·&nbsp; <a href="./wildlife-risk/pipeline">See the pipeline diagram</a></p>
       </div>
     </section>
 
@@ -391,7 +400,7 @@
     </section>
 
     <footer>
-      Wael Halabi · Toronto · <a href="./index.html">Ride the 3D version</a>
+      Wael Halabi · Toronto · <a href="./">Ride the 3D version</a>
     </footer>
 
   </main>

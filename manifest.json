@@ -2,7 +2,7 @@
   "name": "Wael Halabi | Transit World",
   "short_name": "Wael Halabi",
   "description": "Civil engineering portfolio: transportation, analytics, and machine learning, presented as an interactive 3D transit world.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#bfe3f2",
