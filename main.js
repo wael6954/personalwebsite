@@ -214,7 +214,7 @@ const DAY_SUN = new THREE.Color(0xfff0d6), MOON_COL = new THREE.Color(0x8093c0)
 const DAY_HEMI_SKY = new THREE.Color(0xcfe8ff), NIGHT_HEMI_SKY = new THREE.Color(0x2a3560)
 const DAY_HEMI_GND = new THREE.Color(0x6b7a5a), NIGHT_HEMI_GND = new THREE.Color(0x20242f)
 const WINDOW_GLOW = new THREE.Color(0xffcb6e), LAMP_GLOW = new THREE.Color(0xffe0a0)
-const windowMats = new Set(), lampMats = new Set()
+const windowMats = new Set(), lampMats = new Set(), boardMats = new Set()
 const lampLights = [], _lb = new THREE.Vector3()
 let lampLightSkip = false
 let stars = null, moon = null, fountLight = null
@@ -271,6 +271,7 @@ function applyTheme() {
   renderer.toneMappingExposure = lerp(1.05, 0.95, theme)
   for (const m of windowMats) m.emissiveIntensity = theme * 0.95
   for (const m of lampMats) m.emissiveIntensity = theme * 1.1
+  for (const m of boardMats) m.emissiveIntensity = lerp(0.55, 1.0, theme)   // the section signs are backlit, brighter after dark
   for (const L of lampLights) L.intensity = theme * 1.6
   if (fountLight) fountLight.intensity = theme * 2.2
   if (stars) stars.material.opacity = theme
@@ -725,6 +726,14 @@ async function init() {
       if (o.name.startsWith('W_Fount') || o.name === 'W_Pond') fountMeshes.push(o)
       if (o.name === 'W_Pond') makeWaterShimmer(o.material, 0xffffff)
       else if (o.name === 'Env_Sea') makeWaterShimmer(o.material, 0xcfe8ff)
+      // the four section signs (About, Projects, Experience, Résumé) are backlit: the panel and its lettering
+      // glow in their own colours, day and night (cloned so nothing else sharing the material changes)
+      if (/^Board_(About|Projects|Experience|Resume)_(panel|text)$/.test(o.name) && o.material && o.material.color) {
+        o.material = o.material.clone()
+        o.material.emissive = o.material.color.clone()
+        o.material.emissiveIntensity = 0.55
+        boardMats.add(o.material)
+      }
       // night mode: warm-glow window glass + streetlamp heads
       const mats = Array.isArray(o.material) ? o.material : [o.material]
       for (const m of mats) {
