@@ -76,6 +76,7 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
 
   // ---- state ----
   let active = false, engaged = false, idx = -1
+  let expanded = false   // phone only: the caption card is a short peek until you ask for the full write-up
   let anim = 0, fresh = false
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3()
   const tPos = new THREE.Vector3(), tLook = new THREE.Vector3()
@@ -101,9 +102,9 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
   function posterPose(i) {
     const a = angleOf(i), nx = Math.cos(a), nz = Math.sin(a), tx = -Math.sin(a), tz = Math.cos(a)
     const wide = camera.aspect >= 1
-    const d = Math.max(4.7, (POSTER_PW * 1.55) / (2 * vfovHalfTan() * camera.aspect))
+    const d = Math.max(4.7, (POSTER_PW * (wide ? 1.55 : 1.2)) / (2 * vfovHalfTan() * camera.aspect))
     const off = wide ? 0.6 : 0
-    const lift = wide ? 0 : -1.15
+    const lift = wide ? 0 : -0.17 * 2 * vfovHalfTan() * d   // poster centre sits above screen centre, clear of the caption card
     const px = nx * R + tx * off, pz = nz * R + tz * off
     tPos.set(px + nx * d, CY + 0.35 + lift, pz + nz * d)
     tLook.set(px, CY + lift, pz)
@@ -130,12 +131,14 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
         <button type="button" class="rh-leave" data-leave>Close ✕</button>`
     } else {
       const p = projects[idx]
+      const phone = matchMedia('(max-width: 720px)').matches
       hud.innerHTML = `
-        <div class="rh-card" tabindex="-1">
+        <div class="rh-card${phone && !expanded ? ' rh-collapsed' : ''}" tabindex="-1">
           <button type="button" class="rh-back" data-back>← All projects</button>
           <h2>${esc(p.title)}</h2>
           <p class="rh-meta">${esc(p.year)} · ${esc(p.area)} · ${p.tags.map(esc).join(', ')}</p>
           <div class="rh-body">${p.html}</div>
+          <button type="button" class="rh-more" data-more>${expanded ? 'Show less' : 'Read the full write-up ↓'}</button>
           ${(p.links || []).length ? `<p class="rh-links">${p.links.map((l) => `<a href="${l.href}"${l.ext ? ' target="_blank" rel="noopener"' : ''}>${esc(l.label)} ↗</a>`).join('')}</p>` : ''}
           <div class="rh-step">
             <button type="button" data-prev ${idx === 0 ? 'disabled' : ''}>← Previous</button>
@@ -152,12 +155,14 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
     if (!t) return
     if (t.dataset.go != null) go(+t.dataset.go)
     else if (t.hasAttribute('data-back')) go(-1)
+    else if (t.hasAttribute('data-more')) { expanded = !expanded; render() }
     else if (t.hasAttribute('data-prev')) go(idx - 1)
     else if (t.hasAttribute('data-next')) go(idx + 1)
     else if (t.hasAttribute('data-leave')) leave()
   })
 
   function go(i) {
+    if (i !== idx) expanded = false
     idx = Math.max(-1, Math.min(n - 1, i))
     render()
     const card = hud.querySelector('.rh-card'); if (card) card.scrollTop = 0
@@ -308,6 +313,7 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
     hideClutter()
     occIdx = -2; occLast.set(1e9, 0, 0)
     active = true; engaged = true
+    document.body.classList.add('row-open')
     camPos.copy(camera.position); fresh = true
     go(camera.aspect >= 1.1 ? -1 : 0)
     hud.hidden = false
@@ -315,6 +321,7 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
   function leave() {
     if (!active) return
     active = false
+    document.body.classList.remove('row-open')
     showClutter()
     hud.hidden = true
     onLeave && onLeave()

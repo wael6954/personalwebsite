@@ -289,6 +289,11 @@
       .intro { font-size: 15px !important; }
     }
     /* SHELTER ROW caption card: a plain printed notice, paper and ink, no chrome. */
+    /* While the poster street is open, the page's own controls step aside (they return on close). */
+    body.row-open #nav, body.row-open #day-btn, body.row-open #mute-btn, body.row-open #simple-link,
+    body.row-open #aerial-btn, body.row-open #hint { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    #nav, #day-btn, #mute-btn, #simple-link { transition: opacity .3s ease, visibility .3s ease, transform .15s ease; }
+    #row-hud .rh-more { display: none; }
     #row-hud { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
     #row-hud[hidden] { display: none; }
     #row-hud .rh-card { position: absolute; left: 36px; bottom: 36px; width: min(430px, 36vw); max-height: calc(100vh - 110px);
@@ -324,6 +329,17 @@
     @media (max-width: 720px) {
       #row-hud .rh-card { left: 0; right: 0; bottom: 0; width: auto; max-height: 52vh; padding: 20px 20px 18px; border-width: 1.5px 0 0; }
       #row-hud h2 { font-size: 21px; }
+      #row-hud .rh-card { max-height: 84vh; }
+      #row-hud .rh-card.rh-collapsed { max-height: none; overflow: visible; padding-bottom: 0; }
+      #row-hud .rh-card.rh-collapsed .rh-meta, #row-hud .rh-card.rh-collapsed .rh-links { display: none; }
+      #row-hud .rh-card.rh-collapsed .rh-body { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+      #row-hud .rh-card.rh-collapsed .rh-body p:not(:first-child) { display: none; }
+      #row-hud .rh-back { margin-bottom: 8px; }
+      #row-hud .rh-card h2 { margin-bottom: 8px; }
+      #row-hud .rh-more { display: inline-block; margin: 0 0 4px; padding: 6px 0; border: none; background: none; cursor: pointer;
+        font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+      #row-hud .rh-step { position: sticky; bottom: -18px; margin: 12px -20px -18px; padding: 12px 20px 14px; background: #f3efe6; }
+      #row-hud .rh-card.rh-collapsed .rh-step { position: static; margin: 8px -20px 0; }
     }
     .links { display:flex; flex-direction:column; gap: 9px; margin-top: 14px; }
     .links a { display:flex; align-items:center; gap: 13px; text-decoration: none; color: var(--ink);
@@ -662,6 +678,6 @@
   }
   </script>
   <script src="./projects-data.js?v=4"></script>
-  <script type="module" src="./main.js?v=43"></script>
+  <script type="module" src="./main.js?v=44"></script>
 </body>
 </html>

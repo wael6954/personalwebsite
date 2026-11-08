@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
-import { initShelterRow } from './shelter-row.js?v=6'
+import { initShelterRow } from './shelter-row.js?v=7'
 
 // ---------------------------------------------------------------------------
 // Wael Halabi, Transit World (scrollytelling portfolio)
