@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import { initShelterRow } from './shelter-row.js?v=6'
 
 // ---------------------------------------------------------------------------
 // Wael Halabi, Transit World (scrollytelling portfolio)
@@ -366,6 +367,7 @@ function setBeat(i) {
     panelOpen = false
     overscroll = 0
     cooldownUntil = nowMs() + 620
+    if (row && row.active) row.leave()
     const p = panels.find(p => +p.dataset.beat === i)
     if (p) p.querySelector('.panel-scroll').scrollTop = 0
     if (srAnnouncerEl) srAnnouncerEl.textContent = 'Now viewing: ' + LABELS[i]
@@ -386,6 +388,12 @@ function activeScroller() {
 
 addEventListener('wheel', (e) => {
   if (pdfOpen() || gameOn()) return
+  if (row && row.active) {
+    // the Shelter Row owns the wheel: it steps posters, or scrolls its caption card
+    const card = e.target.closest && e.target.closest('.rh-card')
+    if (card && card.scrollHeight > card.clientHeight + 1) return
+    e.preventDefault(); row.handleWheel(e.deltaY); return
+  }
   const sc = activeScroller()
   if (panelOpen) {
     // scroll lock: while a popup is open, wheel input only scrolls its own
@@ -416,6 +424,14 @@ const onEgg = (e) => e.target.closest && e.target.closest('#egg')
 addEventListener('touchstart', (e) => { if (gameOn() || onEgg(e)) return; lastY = startY = e.touches[0].clientY; startX = e.touches[0].clientX; touchAcc = 0; touchStepped = false }, { passive: true })
 addEventListener('touchmove', (e) => {
   if (pdfOpen() || gameOn() || onEgg(e)) return
+  if (row && row.active) {
+    // sideways swipe steps posters; vertical drags stay with the caption card
+    const dx = e.touches[0].clientX - startX, dy = e.touches[0].clientY - startY
+    if (!touchStepped && Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && !(e.target.closest && e.target.closest('.rh-card'))) {
+      row.handleSwipe(dx); touchStepped = true
+    }
+    return
+  }
   if (lastY == null) return
   const dy = lastY - e.touches[0].clientY
   lastY = e.touches[0].clientY
@@ -454,6 +470,7 @@ addEventListener('keydown', (e) => {
   if (gameOn()) return
   if (e.key === 'Escape' && pdfOpen()) { closePdf(); return }
   if (pdfOpen()) return
+  if (row && row.active) { if (row.handleKey(e)) e.preventDefault(); return }
   if (e.key === 'Escape') { panelOpen = false; return }
   if (panelOpen) return   // scroll lock: keyboard section-jumps are disabled while a popup is open
   if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); setBeat(targetBeat + 1) }
@@ -481,7 +498,9 @@ const INFO_ANCHORS = {
   // 5 = Contact beat has no info button (3D contact info is shown directly)
 }
 let panelOpen = false
-infoBtn.addEventListener('click', () => { panelOpen = true })
+let row = null   // the Shelter Row (poster street for the Projects sign); null until built
+// On the Projects sign the "i" opens the poster street; if it isn't ready, fall back to the text panel.
+infoBtn.addEventListener('click', () => { if (targetBeat === 2 && row) row.enter(); else panelOpen = true })
 panels.forEach((p) => {
   const x = document.createElement('button')
   x.className = 'panel-close'
@@ -795,6 +814,14 @@ async function init() {
       get tram() { return tram },
       get state() { return { targetBeat, currentG: +currentG.toFixed(3), panelOpen, theme: +theme.toFixed(2) } },
       setNight,
+      get row() { return row },
+    }
+
+    // the poster street for the Projects sign (built after the world so a failure never blocks the site)
+    if (window.PROJECTS) {
+      initShelterRow({ scene, camera, dom: renderer.domElement, projects: window.PROJECTS, isMobile, reduceMotion, getLeaves: () => leaves, getTram: () => tram, getBirds: () => birdMeshes })
+        .then((r) => { row = r })
+        .catch((err) => console.error('shelter row failed', err))
     }
 
     applyTheme()   // apply saved day/night preference now that materials exist
@@ -840,7 +867,7 @@ function syncUI() {
 
   // float the "i" above the current section's sign (screen-space projection)
   const anchor = INFO_ANCHORS[targetBeat]
-  const showInfo = !!anchor && settled && !aerial && !panelOpen
+  const showInfo = !!anchor && settled && !aerial && !panelOpen && !(row && row.engaged)
   infoBtn.classList.toggle('gone', !showInfo)
   if (showInfo) {
     _iv.copy(anchor).project(camera)
@@ -886,6 +913,7 @@ function tick() {
   } else {
     applyCamera(dt)
   }
+  if (row && !aerial) row.update(dt, _look)
 
   // streetcar: parked until first scroll, then cruises the ring, easing to a
   // halt at the tram stop each lap (dings + dwells), then pulls away
@@ -1173,6 +1201,7 @@ function resetDrop(d) {
 const raycaster = new THREE.Raycaster()
 const _ptr = new THREE.Vector2()
 renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (row && row.active) return   // Shelter Row open: clicks belong to the posters, not the world toys
   if (!tram && !treeMeshes.length) return
   _ptr.x = (e.clientX / window.innerWidth) * 2 - 1
   _ptr.y = -(e.clientY / window.innerHeight) * 2 + 1

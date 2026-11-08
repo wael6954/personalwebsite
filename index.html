@@ -288,6 +288,43 @@
       .panel h2 { font-size: 26px; }
       .intro { font-size: 15px !important; }
     }
+    /* SHELTER ROW caption card: a plain printed notice, paper and ink, no chrome. */
+    #row-hud { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
+    #row-hud[hidden] { display: none; }
+    #row-hud .rh-card { position: absolute; left: 36px; bottom: 36px; width: min(430px, 36vw); max-height: calc(100vh - 110px);
+      overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; padding: 26px 28px 22px;
+      background: #f3efe6; color: var(--ink); border: 1.5px solid var(--ink); border-radius: 0; outline: none; }
+    #row-hud h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 26px; line-height: 1.12;
+      letter-spacing: -.02em; margin: 0 0 12px; }
+    #row-hud .rh-lede, #row-hud .rh-body p { font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.6;
+      color: #3d4a57; margin: 0 0 12px; }
+    #row-hud .rh-body strong { color: var(--ink); font-weight: 600; }
+    #row-hud .rh-meta { font-family: 'Montserrat', sans-serif; font-size: 12.5px; line-height: 1.5; color: #55636f; margin: 0 0 14px; }
+    #row-hud .rh-list { list-style: none; margin: 14px 0 0; padding: 0; }
+    #row-hud .rh-list button { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 7px 0; border: none; background: none;
+      cursor: pointer; text-align: left; color: var(--ink); font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.3; }
+    #row-hud .rh-list li + li { border-top: 1px solid rgba(34,48,63,.12); }
+    #row-hud .rh-list button { justify-content: space-between; gap: 20px; padding: 10px 0; }
+    #row-hud .rh-list .rh-t { flex: 1 1 auto; min-width: 0; }
+    #row-hud .rh-list .rh-y { flex: 0 0 auto; min-width: 2.6em; text-align: right; font-variant-numeric: tabular-nums; color: #55636f; }
+    #row-hud .rh-list button:hover .rh-t, #row-hud .rh-list button:focus-visible .rh-t { text-decoration: underline; text-underline-offset: 3px; }
+    #row-hud button:focus-visible, #row-hud a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    #row-hud .rh-back, #row-hud .rh-step button, #row-hud .rh-leave { border: none; background: none; cursor: pointer; padding: 0;
+      font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: var(--ink); }
+    #row-hud .rh-back { margin-bottom: 14px; text-decoration: underline; text-underline-offset: 3px; }
+    #row-hud .rh-links { margin: 4px 0 6px; }
+    #row-hud .rh-links a { display: inline-block; margin: 0 18px 6px 0; color: var(--ink); font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+    #row-hud .rh-step { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 12px;
+      border-top: 1.5px solid var(--ink); font-family: 'Montserrat', sans-serif; font-size: 12.5px; color: #55636f; }
+    #row-hud .rh-step button:disabled { opacity: .3; cursor: default; }
+    #row-hud .rh-back:hover, #row-hud .rh-step button:not(:disabled):hover { opacity: .6; }
+    #row-hud .rh-leave { position: absolute; top: 22px; right: 24px; pointer-events: auto; padding: 8px 12px;
+      background: #f3efe6; border: 1.5px solid var(--ink); }
+    @media (max-width: 720px) {
+      #row-hud .rh-card { left: 0; right: 0; bottom: 0; width: auto; max-height: 52vh; padding: 20px 20px 18px; border-width: 1.5px 0 0; }
+      #row-hud h2 { font-size: 21px; }
+    }
     .links { display:flex; flex-direction:column; gap: 9px; margin-top: 14px; }
     .links a { display:flex; align-items:center; gap: 13px; text-decoration: none; color: var(--ink);
       background: #f5f7f8; padding: 12px 15px; border-radius: 9px; border-left: 3px solid var(--accent, var(--ink));
@@ -405,7 +442,7 @@
         <span class="eyebrow">About</span>
         <h2>About me</h2>
         <p class="intro">I'm interested in solving transportation problems at the intersection of engineering, analytics, and technology.</p>
-        <p>I'm finishing my civil engineering degree at the <strong>University of Toronto</strong> in 2027. Over a year at the <strong>City of Toronto</strong>, I worked in the Data &amp; Analytics Unit, across data collection, operations, and analytics. Projects ranged from <strong>FIFA World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
+        <p>I'm finishing my civil engineering degree at the <strong>University of Toronto</strong> in 2027. Over a year at the <strong>City of Toronto</strong>, I worked in the Data &amp; Analytics Unit, across data collection, operations, and analytics. Projects ranged from <strong>World Cup</strong> congestion monitoring and city-wide bicycle demand estimation to accessibility modeling, machine learning, and <strong>Automated Speed Enforcement</strong> evaluation. This work supported operational planning, informed <strong>City Council</strong> reporting, and contributed to public transportation policy discussions.</p>
         <p>What I enjoy most are problems where the answer isn't obvious from the data alone: understanding congestion, improving transit reliability, estimating travel demand, or evaluating policy. I like combining engineering judgment with analytical tools to help cities make better decisions.</p>
         <p>I also like building under a deadline. I <strong>won the ShiftED hackathon</strong> with an AI patient-monitoring platform and placed <strong>10th of 328</strong> at the NSRI Summer Research Hackathon.</p>
         <p>Outside of engineering, I'm usually building side projects, exploring new tech, or playing sports.</p>
@@ -424,9 +461,9 @@
           <p>Designed and deployed an automated system evaluating the impacts of ASE camera removals across Toronto. Built scalable analytics pipelines on city-wide traffic data to monitor roadway performance and support policy evaluation. The analyses informed <strong>City Council</strong> reporting and were discussed publicly by the <strong>Mayor</strong>.</p>
         </div>
         <div class="item">
-          <h3>FIFA World Cup Congestion Monitoring</h3>
+          <h3>World Cup Congestion Monitoring</h3>
           <div class="meta">2026 · Python · SQL · Geospatial</div>
-          <p>Developed automated congestion monitoring workflows supporting the <strong>City of Toronto</strong>'s transportation planning for the <strong>FIFA World Cup</strong>. Built repeatable Python and SQL pipelines to monitor network performance, identify congestion trends, and generate operational insights.</p>
+          <p>Developed automated congestion monitoring workflows supporting the <strong>City of Toronto</strong>'s transportation planning for the <strong>World Cup</strong>. Built repeatable Python and SQL pipelines to monitor network performance, identify congestion trends, and generate operational insights.</p>
         </div>
         <div class="item">
           <h3>City-Wide Bicycle Demand Estimation</h3>
@@ -459,7 +496,7 @@
         <div class="item">
           <h3>ShiftED, Dynamic Triage Monitoring</h3>
           <div class="meta">2026 · AI/ML · Healthcare · 🏆 Hackathon Winner</div>
-          <p><strong>Winner of the AI × Bio Hackathon.</strong> An AI-powered patient-monitoring platform that learns individualized physiological baselines from wearables to detect early deterioration. Currently being developed as a <strong>startup</strong>.</p>
+          <p><strong>Winner of the Translational AIxBio Hackathon.</strong> An AI-powered patient-monitoring platform that learns individualized physiological baselines from wearables to detect early deterioration. Currently being developed as a <strong>startup</strong>.</p>
         </div>
         <div class="item">
           <h3>Restaurant Taste Model</h3>
@@ -489,7 +526,7 @@
           <div class="dates">September 2025 to September 2026</div>
           <ul>
             <li>Helped build the City's bicycle AADT estimation framework used to estimate cycling volumes across Toronto.</li>
-            <li>Built automated congestion monitoring tools supporting <strong>FIFA World Cup</strong> transportation planning.</li>
+            <li>Built automated congestion monitoring tools supporting <strong>World Cup</strong> transportation planning.</li>
             <li>Designed an automated system evaluating ASE camera removals, contributing to analyses presented to <strong>City Council</strong> and discussed publicly by the <strong>Mayor</strong>.</li>
             <li>Developed geospatial accessibility models in R and QGIS, and ML models for congestion forecasting and collision-severity prediction.</li>
             <li>Automated Python and SQL workflows over large-scale transportation datasets.</li>
@@ -551,7 +588,7 @@
         <div class="item">
           <h3>Awards</h3>
           <div class="awards-list">
-            <div>🏆 AI × Bio Hackathon Winner</div>
+            <div>🏆 Translational AIxBio Hackathon Winner</div>
             <div>🏆 Manuel A. Fine Scholarship</div>
             <div>🏆 Victor Xin Scholarship</div>
             <div>🏆 WSP Scholarship</div>
@@ -624,6 +661,7 @@
     }
   }
   </script>
-  <script type="module" src="./main.js?v=41"></script>
+  <script src="./projects-data.js?v=4"></script>
+  <script type="module" src="./main.js?v=43"></script>
 </body>
 </html>
