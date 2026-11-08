@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
-import { initShelterRow } from './shelter-row.js?v=7'
+import { initShelterRow } from './shelter-row.js?v=11'
 
 // ---------------------------------------------------------------------------
 // Wael Halabi, Transit World (scrollytelling portfolio)
@@ -912,6 +912,15 @@ function tick() {
     _look.lerp(aerialPose.look, 0.08); camera.lookAt(_look)
   } else {
     applyCamera(dt)
+  }
+  // Phones are narrow, so the Projects sign (and the poster street) is seen through a slightly wider lens
+  // instead of cutting off the sign's edges.
+  {
+    const wantFov = camera.aspect < 1 && targetBeat === 2 ? 56 : 45
+    if (Math.abs(camera.fov - wantFov) > 0.02) {
+      camera.fov += (wantFov - camera.fov) * (reduceMotion ? 1 : 0.07)
+      camera.updateProjectionMatrix()
+    }
   }
   if (row && !aerial) row.update(dt, _look)
 

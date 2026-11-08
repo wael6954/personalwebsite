@@ -102,9 +102,9 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
   function posterPose(i) {
     const a = angleOf(i), nx = Math.cos(a), nz = Math.sin(a), tx = -Math.sin(a), tz = Math.cos(a)
     const wide = camera.aspect >= 1
-    const d = Math.max(4.7, (POSTER_PW * (wide ? 1.55 : 1.2)) / (2 * vfovHalfTan() * camera.aspect))
+    const d = Math.max(4.7, (POSTER_PW * (wide ? 1.55 : 1.5)) / (2 * vfovHalfTan() * camera.aspect))
     const off = wide ? 0.6 : 0
-    const lift = wide ? 0 : -0.17 * 2 * vfovHalfTan() * d   // poster centre sits above screen centre, clear of the caption card
+    const lift = wide ? 0 : -0.15 * 2 * vfovHalfTan() * d   // poster centre sits above screen centre, clear of the caption card
     const px = nx * R + tx * off, pz = nz * R + tz * off
     tPos.set(px + nx * d, CY + 0.35 + lift, pz + nz * d)
     tLook.set(px, CY + lift, pz)
@@ -122,7 +122,7 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
   function render() {
     if (idx < 0) {
       hud.innerHTML = `
-        <div class="rh-card" tabindex="-1">
+        <div class="rh-card rh-listcard" tabindex="-1">
           <h2>Projects</h2>
           <p class="rh-lede">Click a poster to read about it, or pick one from the list.</p>
           <ol class="rh-list">${projects.map((p, i) =>
@@ -358,7 +358,8 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
   // ---- per-frame: rise the cases, then own the camera while engaged ----
   const _l = new THREE.Vector3()
   function update(dt, look) {
-    const target = active ? 1 : 0
+    // on a phone the list view shows the sign itself, so the posters sink until you pick one
+    const target = active && !(idx < 0 && camera.aspect < 1) ? 1 : 0
     anim += (target - anim) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 2.6))
     if (Math.abs(target - anim) < 0.002) anim = target
     root.visible = anim > 0.001
@@ -380,7 +381,12 @@ export async function initShelterRow({ scene, camera, dom, projects, isMobile, r
     base.copy(camera.position)           // the beat pose applyCamera just set
     _l.copy(look)
     if (fresh) { camLook.copy(look); fresh = false }
-    if (active) { idx < 0 ? overviewPose() : posterPose(idx) } else { tPos.copy(base); tLook.copy(_l) }
+    if (active && idx < 0 && camera.aspect < 1) {
+      // phones: "All projects" just goes back to the sign instead of flying out over the row
+      // and the sign is framed in the space above the short list
+      tPos.copy(base); tLook.copy(_l)
+      tLook.y -= 0.3 * 2 * vfovHalfTan() * tPos.distanceTo(tLook)
+    } else if (active) { idx < 0 ? overviewPose() : posterPose(idx) } else { tPos.copy(base); tLook.copy(_l) }
     if (active) occUpdate()
     const k = reduceMotion ? 1 : 1 - Math.exp(-dt * (active ? 3.1 : 3.6))
     camPos.lerp(tPos, k)
