@@ -16,7 +16,7 @@ Everything is flat-color low-poly geometry with the color baked into the GLB mat
 | `shelter-row.js` | The Shelter Row: the poster street that opens from the Projects sign. Poster cases, camera poses, caption card, input, and the clearing of anything that blocks the view. |
 | `posters.js` | Draws each poster on a canvas: the title, the year and a drawing of the project's data or idea. |
 | `taste/` | The interactive app for the Restaurant Taste Model project (a copy of `app/index.html` from the `taste-test` repo, with a button back to this site). |
-| `wildlife-risk/` | The interactive risk map and the pipeline diagram for the Alberta wildlife crossing project. Both pages carry a noindex tag and are not in the sitemap. |
+| `wildlife-risk/` | The interactive risk map, the pipeline diagram and the cost drawing page (`cost.html`, with its data in `cost_data/`, about 53 MB) for the Alberta wildlife crossing project. The three pages carry a noindex tag and are not in the sitemap. |
 | `world.glb` | The town. Ring road and tram track, buildings facing a central park with a pond, a walled fountain, four labeled section signs, trees, streetlamps, ducks, townsfolk, a dock, and a small fleet of sailboats out on the sea. |
 | `tram.glb` | The red streetcar. It rides the ring and eases to a stop at the shelter each lap. |
 | `sky.glb` | Clouds and a bird flock that drift above the town. |
