@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crossing cost drawings</title>
+<!--
+  Draws a crossing site from the files in cost_data/, which src/cost/19-drawing_data.py writes.
+  cost.html?segment=1970 draws one site; cost.html lists the priced sites and searches them.
+-->
+<style>
+  :root { --paper:#ffffff; --ink:#161616; --muted:#6b6b6b; --accent:#161616; --rule:#e2e2e2; color-scheme:light; }
+  :root[data-theme="dark"] { --paper:#1d1d1f; --ink:#f2f2f4; --muted:#a1a1a8; --accent:#f2f2f4; --rule:#38383c; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.45 -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif; }
+  main { max-width:992px; margin:0 auto; padding:28px 16px 80px; }
+  a { color:var(--accent); }
+  nav { display:flex; gap:18px; align-items:center; margin:0 32px 18px; font-size:13.5px; }
+  #theme { margin-left:auto; background:none; color:var(--ink); border:1px solid var(--rule); border-radius:980px; padding:5px 12px; font-size:13px; }
+  [hidden] { display:none !important; }
+  h1 { font-size:30px; margin:0 0 12px; letter-spacing:-.015em; padding:0 32px; }
+  .sub { color:var(--muted); margin:0 0 20px; padding:0 32px; }
+  .sub:empty { display:none; }
+  button { font:inherit; cursor:pointer; }
+  .lead { margin:28px 32px 0; max-width:720px; font-size:19px; line-height:1.55; }
+  .lead p { margin:0 0 10px; }
+  .lead p.check { margin:16px 0 4px; font-size:14.5px; font-weight:600; }
+  .lead ul { margin:0; padding-left:18px; color:var(--muted); font-size:14.5px; }
+  .lead li.strong { color:var(--ink); font-weight:600; }
+  figure { margin:44px 0 0; }
+  .paper { overflow-x:auto; }
+  figure svg { display:block; width:100%; min-width:620px; height:auto; }
+  .save { display:block; margin:2px 32px 0 auto; background:none; border:0; padding:4px 0; color:var(--muted); font-size:12.5px; text-decoration:underline; }
+  .save:hover { color:var(--accent); }
+  details { margin:48px 32px 0; border-top:2px solid var(--ink); padding-top:12px; }
+  summary { cursor:pointer; }
+  table { border-collapse:collapse; margin-top:10px; width:100%; }
+  td, th { padding:7px 12px 7px 0; border-top:1px solid var(--rule); vertical-align:top; text-align:left; }
+  th { color:var(--muted); font-weight:400; border-top:0; }
+  details td:first-child { color:var(--muted); width:36%; }
+  .list { margin:0 32px; overflow-x:auto; }
+  .note { color:var(--muted); font-size:13px; margin:28px 32px 0; }
+  .search { margin:0 32px 8px; }
+  .search input { width:100%; max-width:420px; padding:10px 12px; font:inherit; color:var(--ink); background:none; border:1px solid var(--rule); border-radius:10px; }
+  .zoomer { display:none; }
+  @media (max-width: 700px) {
+    main { padding:10px 4px 48px; }
+    h1 { font-size:22px; padding:0 10px; }
+    nav, .lead, details, .note, .list, .search { margin-left:10px; margin-right:10px; }
+    .lead { margin-top:14px; font-size:16px; }
+    figure { margin-top:26px; }
+    figure svg { min-width:0; }                  /* the whole drawing fits the screen ... */
+    figure.zoom svg { min-width:960px; }         /* ... and zooms to full size, swiping sideways */
+    .paper { -webkit-overflow-scrolling:touch; }
+    figure .zoomer, figure .save { display:inline-block; margin:8px 0 0 10px; padding:10px 16px; font-size:14px; font-weight:600;
+      color:var(--ink); background:none; border:1px solid var(--ink); border-radius:10px; text-decoration:none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="map" id="maplink">Risk map</a><a href="cost.html">All priced sites</a><button id="theme">Theme: auto</button></nav>
+  <h1 id="title">Loading</h1>
+  <p class="sub" id="subtitle"></p>
+  <div id="out"></div>
+</main>
+<script>
+// drawing colours; WHITE is the paper colour, so it is dark in the dark theme
+const PALETTES = {
+  light: {INK: '#161616', MID: '#6b6b6b', PALE: '#b9b9b9', ACC: '#0066cc', ACCPALE: '#e6f0fb', WHITE: '#ffffff', CONCRETE: '#e4e4e4',
+          GRID: '#ececec', SCALEGRID: '#e6e6e6', THIN: '#b5b5b5', BACK: '#d9d9d9', SIDE: '#c4c4c4', FLOOR: '#efefef', ARCH: '#e8e8e8', ASPHALT: '#161616'},
+  dark: {INK: '#f2f2f4', MID: '#a1a1a8', PALE: '#55555c', ACC: '#3d9bff', ACCPALE: '#172c47', WHITE: '#1d1d1f', CONCRETE: '#3b3b40',
+         GRID: '#2b2b2f', SCALEGRID: '#303035', THIN: '#56565d', BACK: '#3a3a3f', SIDE: '#48484e', FLOOR: '#2c2c30', ARCH: '#333338', ASPHALT: '#7d7d85'},
+};
+let INK, MID, PALE, ACC, ACCPALE, WHITE, CONCRETE, GRID, SCALEGRID, THIN, BACK, SIDE, FLOOR, ARCH, ASPHALT;
+const W = 960;
+const FONT = '-apple-system, Segoe UI, Inter, Helvetica, Arial, sans-serif';
+const NS = 'http://www.w3.org/2000/svg';
+const EFFECT_YEARS = 75;   // the lifetime used by 18
+
+let D;                     // the site being drawn
+let render;                // draws the loaded page again, used when the theme changes
+let PROVINCE;              // highway lines for the small Alberta map
+let floorLevel, roadTop, centres, structTop;
+
+// ---- drawing helpers ------------------------------------------------------------------------
+function el(parent, tag, attrs = {}, text) {
+  const node = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text !== undefined) node.textContent = text;
+  parent.appendChild(node);
+  return node;
+}
+function sheet(height, id) {
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('xmlns', NS);
+  svg.setAttribute('viewBox', `0 0 ${W} ${height.toFixed(0)}`);
+  svg.setAttribute('font-family', FONT);
+  const defs = el(svg, 'defs');
+  const hatch = (name, colour, gap, angle, width = 1) => {
+    const p = el(defs, 'pattern', {id: id + name, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: `rotate(${angle})`});
+    el(p, 'line', {x1: 0, y1: 0, x2: 0, y2: gap, stroke: colour, 'stroke-width': width});
+  };
+  hatch('earth', PALE, 9, 45);
+  hatch('fill', ACC, 7, -45, .9);
+  const c = el(defs, 'pattern', {id: id + 'concrete', width: 14, height: 14, patternUnits: 'userSpaceOnUse'});
+  el(c, 'rect', {width: 14, height: 14, fill: CONCRETE});
+  for (const [x, y] of [[2, 3], [9, 2], [6, 8], [12, 11], [3, 12]]) el(c, 'circle', {cx: x, cy: y, r: .8, fill: MID});
+  el(svg, 'rect', {width: W, height: height.toFixed(0), fill: WHITE});
+  svg.pat = name => `url(#${id + name})`;
+  return svg;
+}
+const pts = list => list.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+const poly = (g, list, a) => el(g, 'polygon', Object.assign({points: pts(list)}, a));
+const path = (g, list, a) => el(g, 'polyline', Object.assign({points: pts(list), fill: 'none'}, a));
+const line = (g, x1, y1, x2, y2, a) => el(g, 'line', Object.assign({x1, y1, x2, y2, stroke: INK, 'stroke-width': 1}, a));
+const rect = (g, x, y, width, height, a) => el(g, 'rect', Object.assign({x, y, width: Math.max(0, width), height: Math.max(0, height)}, a));
+function text(g, x, y, str, a = {}) {
+  return el(g, 'text', Object.assign({x, y, fill: INK, 'font-size': 14, 'text-anchor': 'middle', stroke: WHITE, 'stroke-width': 4, 'paint-order': 'stroke', 'stroke-linejoin': 'round'}, a), str);
+}
+// a dimension line with slash ticks, as on an engineering drawing
+function dim(g, x1, y1, x2, y2, label, o = {}) {
+  line(g, x1, y1, x2, y2, {stroke: INK, 'stroke-width': .9});
+  for (const [x, y] of [[x1, y1], [x2, y2]]) line(g, x - 4.5, y + 4.5, x + 4.5, y - 4.5, {'stroke-width': 1.6});
+  const vertical = Math.abs(x2 - x1) < 1;
+  const mx = (x1 + x2) / 2 + (o.dx || 0), my = (y1 + y2) / 2 + (o.dy || 0);
+  text(g, vertical ? mx + (o.left ? -9 : 9) : mx, vertical ? my + 5 : my - 8, label, {'text-anchor': vertical ? (o.left ? 'end' : 'start') : 'middle', 'font-size': 13.5});
+}
+function callout(g, x, y, tx, ty, label, o = {}) {
+  line(g, x, y, tx, ty, {stroke: MID, 'stroke-width': .8});
+  el(g, 'circle', {cx: x, cy: y, r: 2.6, fill: INK});
+  const anchor = o.anchor || (tx < x ? 'end' : 'start');
+  text(g, tx + (anchor === 'end' ? -6 : anchor === 'start' ? 6 : 0), ty + 5, label, {'text-anchor': anchor, 'font-weight': o.bold ? 600 : 400});
+}
+function heading(g, title, note) {
+  text(g, 32, 40, title.toUpperCase(), {'text-anchor': 'start', 'font-size': 15, 'font-weight': 700, 'letter-spacing': '.08em'});
+  if (note) text(g, W - 32, 40, note, {'text-anchor': 'end', 'font-size': 12.5, fill: MID});
+}
+// silhouettes, drawn in metres: (x, y) is where the feet stand, k is pixels per metre
+function deer(g, x, y, k, flip, kv = k) {
+  const t = el(g, 'g', {transform: `translate(${x} ${y}) scale(${(flip ? -k : k)} ${kv})`, fill: INK});
+  el(t, 'path', {d: 'M-.72 -.98 C-.45 -1.12 .15 -1.02 .38 -1.10 C.52 -1.28 .58 -1.46 .64 -1.58 L.60 -1.74 L.70 -1.62 L.80 -1.66 C.90 -1.58 1.06 -1.50 1.07 -1.43 C1.02 -1.37 .88 -1.38 .82 -1.35 C.74 -1.16 .70 -.92 .54 -.74 C.30 -.64 -.30 -.62 -.52 -.66 C-.66 -.72 -.74 -.84 -.72 -.98 L-.86 -.92 Z'});
+  for (const d of ['M-.58 -.72 L-.70 -.36 L-.62 0 L-.55 0 L-.60 -.36 L-.42 -.68 Z', 'M-.36 -.68 L-.38 -.32 L-.30 0 L-.23 0 L-.29 -.32 L-.20 -.66 Z', 'M.30 -.68 L.30 -.34 L.28 0 L.35 0 L.38 -.34 L.46 -.70 Z', 'M.46 -.74 L.56 -.38 L.60 0 L.67 0 L.64 -.40 L.60 -.80 Z']) el(t, 'path', {d});
+  el(t, 'path', {d: 'M.68 -1.66 C.60 -1.86 .44 -1.92 .36 -2.04 M.56 -1.82 L.62 -2.02 M.46 -1.89 L.34 -1.88', stroke: INK, 'stroke-width': .035, fill: 'none', 'stroke-linecap': 'round'});
+}
+function car(g, x, y, k, kv = k) {
+  const t = el(g, 'g', {transform: `translate(${x} ${y}) scale(${k} ${kv})`});
+  el(t, 'path', {d: 'M-2.2 -.35 L-2.15 -.85 C-1.9 -.95 -1.5 -.98 -1.35 -1.02 L-.8 -1.45 C-.4 -1.55 .6 -1.55 .9 -1.45 L1.45 -1.0 C1.8 -.95 2.15 -.85 2.2 -.7 L2.2 -.35 Z', fill: WHITE, stroke: INK, 'stroke-width': .07, 'stroke-linejoin': 'round'});
+  el(t, 'path', {d: 'M-1.1 -1.0 L-.7 -1.35 L0 -1.38 L0 -1.0 Z M.18 -1.0 L.18 -1.38 L.8 -1.33 L1.2 -1.0 Z', fill: ACCPALE, stroke: INK, 'stroke-width': .04});
+  for (const cx of [-1.35, 1.35]) { el(t, 'circle', {cx, cy: -.33, r: .33, fill: INK}); el(t, 'circle', {cx, cy: -.33, r: .12, fill: WHITE}); }
+}
+const money = v => '$' + (v / 1e6).toFixed(1) + 'M';
+const whole = v => Math.round(v).toLocaleString('en-CA');
+const m1 = v => v.toFixed(1) + ' m';
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const range = (a, b, step) => { const out = []; for (let v = a; v < b - 1e-6; v += step) out.push(v); out.push(b); return out; };
+const interp = (table, x) => {
+  for (let i = 1; i < table.length; i++) if (x <= table[i][0]) {
+    const [a, b] = [table[i - 1], table[i]];
+    return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+  }
+  return table[table.length - 1][1];
+};
+// the largest vertical exaggeration that keeps a height of `metres` within `room` pixels
+const exaggerate = (choices, metres, k, room) => choices.find(e => metres * k * e <= room) || choices[choices.length - 1];
+const scaleNote = ex => ex === 1 ? 'drawn to scale' : `vertical exaggeration ${ex}×`;
+const under = () => D.kind === 'underpass';
+
+// the stretch of road with ground levels (shorter than 300 m a side near a segment end)
+const dataStart = () => D.along[0][0];
+const dataEnd = () => D.along[D.along.length - 1][0];
+// raised road (underpass only): full height over the bridge, then down at the ramp grade
+const rampLength = () => under() ? D.raise / D.grade : 0;
+const lift = s => under() ? Math.max(0, D.raise - D.grade * Math.max(0, Math.abs(s - D.station) - D.opening / 2)) : 0;
+// the stretch worth looking at: the structure and its ramps, with a little road either side
+const reachOfWorks = () => D.opening / 2 + (under() && D.raise > .3 ? rampLength() : 0);
+function viewWindow() {
+  const pad = under() ? Math.max(30, reachOfWorks() * .14) : 45;
+  const a = Math.max(dataStart(), D.station - reachOfWorks() - pad), b = Math.min(dataEnd(), D.station + reachOfWorks() + pad);
+  const stations = [a, ...D.along.map(p => p[0]).filter(c => c > a && c < b), b];
+  const levels = stations.map(c => interp(D.along, c));
+  return {a, b, pad, line: stations.map((c, i) => [c, levels[i]]), levels};
+}
+// marks where the segment itself starts or ends, if that falls inside the view
+function segmentEnds(g, X, Y, a, b) {
+  const ends = [[dataStart(), a, D.station - 300, 'segment starts', 'start', 6], [dataEnd(), b, D.station + 300, 'segment ends', 'end', -6]];
+  for (const [at, edge, full, words, anchor, dx] of ends) {
+    if (Math.abs(at - full) < 6 || Math.abs(at - edge) > .01) continue;
+    const y = Y(interp(D.along, at));
+    line(g, X(at), y - 40, X(at), y + 20, {stroke: MID, 'stroke-dasharray': '3 3'});
+    text(g, X(at) + dx, y + 36, words, {'text-anchor': anchor, 'font-size': 12, fill: MID});
+  }
+}
+
+// ---- 1. Location ----------------------------------------------------------------------------
+function location_() {
+  const H = 560, svg = sheet(H, 'loc');
+  const me = D.map.segments.find(s => s.id === D.segment);
+  const k = 410 / 3000, cx = W / 2 - 60, cy = H / 2 + 4;
+  const P = p => [cx + p[0] * k, cy - p[1] * k];
+  const clip = el(svg, 'clipPath', {id: 'mapclip'});
+  rect(clip, 32, 60, W - 64, H - 110);
+  const g = el(svg, 'g', {'clip-path': 'url(#mapclip)'});
+  // survey grid every 500 m
+  for (let i = -10; i <= 10; i++) {
+    line(g, cx + i * 500 * k, 60, cx + i * 500 * k, H - 50, {stroke: GRID});
+    line(g, 32, cy + i * 500 * k, W - 32, cy + i * 500 * k, {stroke: GRID});
+  }
+  const road = (list, outer, inner, colour) => {
+    path(g, list, {stroke: colour, 'stroke-width': outer, 'stroke-linejoin': 'round'});
+    path(g, list, {stroke: WHITE, 'stroke-width': inner, 'stroke-linejoin': 'round'});
+  };
+  for (const s of D.map.segments) if (s.id !== D.segment) for (const l of s.lines) road(l.map(P), 9, 6, MID);
+  const mine = me.lines[0].map(P);
+  path(g, mine, {stroke: ACC, 'stroke-width': 11});
+  path(g, mine, {stroke: WHITE, 'stroke-width': 1.4, 'stroke-dasharray': '9 7'});
+  // fence: a line each side with cross ticks, the usual map symbol
+  for (const side of [-1, 1]) {
+    const off = mine.map((p, i) => {
+      const a = mine[Math.max(0, i - 1)], b = mine[Math.min(mine.length - 1, i + 1)];
+      const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      return [p[0] - side * 20 * (b[1] - a[1]) / d, p[1] + side * 20 * (b[0] - a[0]) / d];
+    });
+    path(g, off, {stroke: INK, 'stroke-width': 1});
+    let carry = 0;
+    for (let i = 1; i < off.length; i++) {
+      const [a, b] = [off[i - 1], off[i]], d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (!d) continue;
+      const ux = (b[0] - a[0]) / d, uy = (b[1] - a[1]) / d;
+      for (let t = carry; t < d; t += 16) {
+        const x = a[0] + ux * t, y = a[1] + uy * t;
+        line(g, x - 3, y - 3, x + 3, y + 3);
+        line(g, x - 3, y + 3, x + 3, y - 3);
+      }
+      carry = (carry - d) % 16; if (carry < 0) carry += 16;
+    }
+  }
+  for (const s of D.map.segments) for (const l of s.lines) for (const p of [l[0], l[l.length - 1]]) {
+    const q = P(p); el(g, 'circle', {cx: q[0], cy: q[1], r: 3.2, fill: WHITE, stroke: INK, 'stroke-width': 1.4});
+  }
+  const spot = P(D.map.spot);
+  el(g, 'circle', {cx: spot[0], cy: spot[1], r: 15, fill: WHITE, stroke: INK, 'stroke-width': 2});
+  el(g, 'circle', {cx: spot[0], cy: spot[1], r: 6, fill: ACC});
+  line(g, spot[0] - 22, spot[1], spot[0] + 22, spot[1]);
+  line(g, spot[0], spot[1] - 22, spot[0], spot[1] + 22);
+  // labels sit square to the road: the crossing and fence above it, the highway below
+  const steps = mine.slice(1).map((p, i) => Math.hypot(p[0] - mine[i][0], p[1] - mine[i][1]));
+  const total = steps.reduce((a, b) => a + b, 0);
+  const at = f => {
+    let left = f * total;
+    for (let i = 0; i < steps.length; i++) {
+      if (left <= steps[i] || i === steps.length - 1) {
+        const a = mine[i], b = mine[i + 1], d = steps[i] || 1, t = clamp(left / d, 0, 1);
+        const tx = (b[0] - a[0]) / d, ty = (b[1] - a[1]) / d;
+        let n = [-ty, tx];
+        if (n[1] > 0 || (Math.abs(n[1]) < 1e-6 && n[0] < 0)) n = [-n[0], -n[1]];
+        return {p: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], n};
+      }
+      left -= steps[i];
+    }
+  };
+  const spotF = D.station / D.length, farF = spotF < .5 ? .84 : .16;
+  const here = at(spotF), far = at(farF);
+  const away = Math.sign(far.p[0] - here.p[0]) || (far.n[0] >= 0 ? 1 : -1);
+  const label = (from, tx, ty, words, anchor, bold) => {
+    const width = words.length * 7.6, right = ty < 330 ? 725 : W - 45;
+    if (anchor === 'start') tx = clamp(tx, 40, right - width); else tx = clamp(tx, 45 + width, right);
+    callout(g, from[0], from[1], tx, clamp(ty, 80, H - 96), words, {anchor, bold});
+  };
+  // on a road that is not close to level, a label reads away from it, to the side it sits on
+  const place = (from, base, n, reach, slide, level, words, bold) => {
+    const steep = Math.abs(n[0]) > .35;
+    const anchor = steep ? (n[0] > 0 ? 'start' : 'end') : level;
+    const shift = steep ? 0 : (level === 'start' ? slide : -slide);
+    label(from, base[0] + n[0] * reach + shift, base[1] + n[1] * reach, words, anchor, bold);
+  };
+  const toward = away > 0 ? 'start' : 'end', back = away > 0 ? 'end' : 'start';
+  place([spot[0] + here.n[0] * 13, spot[1] + here.n[1] * 13], spot, here.n, 80, 24, back, `Proposed ${D.kind}`, true);
+  place([far.p[0] + far.n[0] * 20, far.p[1] + far.n[1] * 20], far.p, far.n, 86, 18, toward,
+        `Wildlife fence, both sides, ${(D.length / 1000).toFixed(1)} km`);
+  place(far.p, far.p, [-far.n[0], -far.n[1]], 66, 18, toward, `Highway ${D.hwy}, this segment`);
+  // north arrow and scale bar
+  rect(g, 50, 66, 40, 70, {fill: WHITE});
+  poly(g, [[70, 92], [60, 128], [70, 119]], {fill: INK});
+  poly(g, [[70, 92], [80, 128], [70, 119]], {fill: WHITE, stroke: INK, 'stroke-width': 1});
+  text(g, 70, 82, 'N', {'font-weight': 700});
+  const bx = 52, by = H - 74, seg = 250 * k;
+  for (let i = 0; i < 4; i++) rect(g, bx + i * seg, by, seg, 7, {fill: i % 2 ? WHITE : INK, stroke: INK});
+  for (const [i, t] of [[0, '0'], [2, '500'], [4, '1000 m']]) text(g, bx + i * seg, by - 7, t, {'font-size': 12});
+  // province inset
+  const ix = W - 218, iy = 76, iw = 178, ih = 238;
+  rect(svg, ix, iy, iw, ih, {fill: WHITE, stroke: INK});
+  const all = PROVINCE.flat();
+  const xs = all.map(p => p[0]), ys = all.map(p => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const q = Math.min((iw - 24) / (x1 - x0), (ih - 40) / (y1 - y0));
+  const I = p => [ix + iw / 2 + (p[0] - (x0 + x1) / 2) * q, iy + ih / 2 + 8 - (p[1] - (y0 + y1) / 2) * q];
+  for (const l of PROVINCE) path(svg, l.map(I), {stroke: PALE, 'stroke-width': .8});
+  const dot = I(D.spot);
+  el(svg, 'circle', {cx: dot[0], cy: dot[1], r: 8, fill: 'none', stroke: ACC, 'stroke-width': 2});
+  el(svg, 'circle', {cx: dot[0], cy: dot[1], r: 3, fill: ACC});
+  text(svg, ix + 10, iy + 18, 'ALBERTA', {'text-anchor': 'start', 'font-size': 11.5, 'font-weight': 700, 'letter-spacing': '.08em'});
+  rect(svg, 32, 60, W - 64, H - 110, {fill: 'none', stroke: INK});
+  heading(svg, 'Location', 'grid 500 m');
+  return svg;
+}
+
+// ---- 2. Front view ---------------------------------------------------------------------------
+function frontUnder() {
+  const H = 480, svg = sheet(H, 'front');
+  const k = 25, X = m => W / 2 + m * k, Y = m => 350 - m * k;
+  const half = D.opening / 2, clear = D.clear, deckTop = D.clear + D.depth;
+  const L = -18, R = 18;
+  // ground below the passage floor
+  poly(svg, [[X(L), Y(0)], [X(R), Y(0)], [X(R), Y(-1.7)], [X(L), Y(-1.7)]], {fill: svg.pat('earth')});
+  // embankment faces
+  for (const side of [-1, 1]) {
+    const face = [[X(side * (half + .8)), Y(0)], [X(side * R), Y(0)], [X(side * R), Y(deckTop)], [X(side * (half + .8)), Y(deckTop)]];
+    poly(svg, face, {fill: ACCPALE});
+    poly(svg, face, {fill: svg.pat('fill'), opacity: .4});
+    // wing wall
+    poly(svg, [[X(side * half), Y(0)], [X(side * half), Y(deckTop)], [X(side * (half + 1.6)), Y(deckTop)], [X(side * (half + 6)), Y(0)]], {fill: svg.pat('concrete'), stroke: INK, 'stroke-width': 1.5});
+  }
+  // inside the passage: depth drawn with receding frames and daylight at the far end
+  rect(svg, X(-half), Y(clear), D.opening * k, clear * k, {fill: BACK, stroke: INK, 'stroke-width': 2});
+  const fx = 3.2, fy = 1.1;
+  for (const side of [-1, 1]) poly(svg, [[X(side * half), Y(clear)], [X(side * (half - fx)), Y(clear - fy)], [X(side * (half - fx)), Y(fy * .55)], [X(side * half), Y(0)]], {fill: SIDE, stroke: INK, 'stroke-width': .8});
+  poly(svg, [[X(-half), Y(0)], [X(-half + fx), Y(fy * .55)], [X(half - fx), Y(fy * .55)], [X(half), Y(0)]], {fill: FLOOR, stroke: INK, 'stroke-width': .8});
+  rect(svg, X(-half + fx), Y(clear - fy), (D.opening - 2 * fx) * k, (clear - fy - fy * .55) * k, {fill: WHITE, stroke: INK, 'stroke-width': .8});
+  // deck, guard rail and traffic
+  rect(svg, X(-half - 1.2), Y(deckTop), (D.opening + 2.4) * k, D.depth * k, {fill: ACC, stroke: INK, 'stroke-width': 1.6});
+  for (let g = -half - .6; g <= half + .6; g += 1.5) line(svg, X(g), Y(deckTop - D.depth), X(g), Y(clear), {stroke: WHITE, 'stroke-width': .8, opacity: .6});
+  line(svg, X(L), Y(deckTop), X(R), Y(deckTop), {'stroke-width': 3});
+  for (let p = L + .4; p < R; p += 1.6) line(svg, X(p), Y(deckTop), X(p), Y(deckTop + .75), {'stroke-width': 1.4});
+  line(svg, X(L), Y(deckTop + .75), X(R), Y(deckTop + .75), {'stroke-width': 2});
+  car(svg, X(-11), Y(deckTop + .02), k); car(svg, X(7.5), Y(deckTop + .02), k);
+  line(svg, X(L), Y(0), X(R), Y(0), {'stroke-width': 2.2});
+  deer(svg, X(-1.6), Y(.08), k, false); deer(svg, X(3.4), Y(.28), k * .8, true);
+  dim(svg, X(-half), Y(-2.45), X(half), Y(-2.45), `${D.opening.toFixed(1)} m opening`);
+  for (const s of [-half, half]) line(svg, X(s), Y(-.1), X(s), Y(-2.65), {stroke: MID, 'stroke-width': .7});
+  dim(svg, X(-half + 1.15), Y(clear), X(-half + 1.15), Y(0), `${m1(D.clear)} clear`);
+  dim(svg, X(half + 6.2), Y(deckTop), X(half + 6.2), Y(clear), `deck ${m1(D.depth)}`);
+  line(svg, X(half + 1.2), Y(clear), X(half + 6.5), Y(clear), {stroke: MID, 'stroke-width': .7});
+  callout(svg, X(half + 2.2), Y(2.4), X(half + 5.6), Y(3.3), 'Wing wall');
+  callout(svg, X(-14.8), Y(2.2), X(-14.8), Y(-1.25), 'Road fill', {anchor: 'middle'});
+  callout(svg, X(1.5), Y(clear + .6), X(1.5), Y(8.7), 'Bridge deck', {anchor: 'middle', bold: true});
+  heading(svg, 'Front view, as an animal approaches', 'drawn to scale, deer for size');
+  return svg;
+}
+const archPoints = (c, base, X, Y) => range(0, Math.PI, Math.PI / 48).map(t => [X(c - D.span / 2 * Math.cos(t)), Y(base + D.rise * Math.sin(t))]);
+function frontOver() {
+  const top = D.rise + D.cover, outer = centres[centres.length - 1] + D.span / 2, toe = outer + D.run * top;
+  const wide = toe + 3, k = (W - 64) / (2 * wide);
+  const y0 = 130 + (top + 2.5) * k, H = y0 + 150, svg = sheet(H, 'front');
+  const X = m => W / 2 + m * k, Y = m => y0 - m * k;
+  rect(svg, X(-wide), Y(0), 2 * wide * k, 2.2 * k, {fill: svg.pat('earth')});
+  const mound = [[X(-toe), Y(0)], [X(-outer), Y(top)], [X(outer), Y(top)], [X(toe), Y(0)]];
+  poly(svg, mound, {fill: ACCPALE});
+  poly(svg, mound, {fill: svg.pat('fill'), opacity: .45, stroke: INK, 'stroke-width': 1.4});
+  for (const c of centres) {
+    poly(svg, archPoints(c, 0, X, Y), {fill: ARCH, stroke: ACC, 'stroke-width': 5});
+    poly(svg, archPoints(c, 0, X, Y), {fill: 'none', stroke: INK, 'stroke-width': 1});
+    car(svg, X(c - 3.2), Y(.02), k); car(svg, X(c + 3.2), Y(.02), k);
+  }
+  line(svg, X(-wide), Y(0), X(wide), Y(0), {'stroke-width': 2.2});
+  for (const side of [-1, 1]) {
+    for (let x = outer - 12; x <= outer; x += 2) line(svg, X(side * x), Y(top), X(side * x), Y(top + 1.4));
+    line(svg, X(side * (outer - 12)), Y(top + 1.4), X(side * outer), Y(top + 1.4), {'stroke-width': 1.6});
+  }
+  deer(svg, X(-4), Y(top), k * 1.1, false); deer(svg, X(5), Y(top), k * .9, true);
+  const first = centres[0];
+  dim(svg, X(first - D.span / 2), Y(-3.8), X(first + D.span / 2), Y(-3.8), `${m1(D.span)} span`);
+  for (const x of [first - D.span / 2, first + D.span / 2]) line(svg, X(x), Y(-.2), X(x), Y(-4.2), {stroke: MID, 'stroke-width': .7});
+  if (D.divided) {
+    const a = first + D.span / 2, b = centres[1] - D.span / 2;
+    dim(svg, X(a), Y(-3.8), X(b), Y(-3.8), `median ${D.median} m (assumed)`);
+    line(svg, X(b), Y(-.2), X(b), Y(-4.2), {stroke: MID, 'stroke-width': .7});
+    callout(svg, X(0), Y(3), X(0), Y(5.6), 'Fill between arches', {anchor: 'middle'});
+  }
+  const last = centres[centres.length - 1];
+  dim(svg, X(last), Y(D.rise), X(last), Y(0), `${m1(D.rise)} rise`);
+  dim(svg, X(-toe + 3), Y(top), X(-toe + 3), Y(0), `${m1(top)}`, {left: true});
+  line(svg, X(-toe + 2), Y(top), X(-outer), Y(top), {stroke: MID, 'stroke-width': .7, 'stroke-dasharray': '2 3'});
+  callout(svg, X(0), Y(top), X(0), Y(top + 5), 'Animal path on top', {anchor: 'middle', bold: true});
+  callout(svg, X(outer + D.run * top * .5), Y(top * .5), X(outer + D.run * top * .5) + 4, Y(top * .5) - 52, `Fill at ${D.run}:1`, {anchor: 'middle'});
+  heading(svg, 'Front view, as a driver approaches', 'drawn to scale, ground shown flat');
+  return svg;
+}
+const frontView = () => under() ? frontUnder() : frontOver();
+
+// ---- drafting helpers for the technical sheets -------------------------------------------------
+const chain = m => `${Math.floor(m / 1000)}+${String((m % 1000).toFixed(m % 1 ? 1 : 0)).padStart(m % 1 ? 5 : 3, '0')}`;
+const thin = (g, x1, y1, x2, y2, a = {}) => line(g, x1, y1, x2, y2, Object.assign({stroke: THIN, 'stroke-width': .6}, a));
+const small = (g, x, y, str, a = {}) => text(g, x, y, str, Object.assign({'font-size': 11, 'stroke-width': 3}, a));
+const upright = (g, x, y, str, a = {}) => small(g, x, y, str, Object.assign({transform: `rotate(-90 ${x} ${y})`, 'text-anchor': 'middle'}, a));
+// a level marker: an open triangle sitting on the point, with its elevation
+function level(g, x, y, label, o = {}) {
+  poly(g, [[x, y], [x - 6, y - 10], [x + 6, y - 10]], {fill: WHITE, stroke: INK, 'stroke-width': 1});
+  poly(g, [[x, y], [x - 3, y - 5], [x + 3, y - 5]], {fill: INK});
+  const left = o.left;
+  line(g, x - 6, y - 10, x + (left ? -78 : 78), y - 10, {'stroke-width': .7});
+  small(g, x + (left ? -10 : 10), y - 14, label, {'text-anchor': left ? 'end' : 'start'});
+}
+function elevationScale(g, x0, x1, Y, lo, hi, ky) {
+  const step = [1, 2, 5, 10, 20].find(s => s * ky >= 22) || 50;
+  for (let z = Math.ceil(lo / step) * step; z <= hi; z += step) {
+    thin(g, x0, Y(z), x1, Y(z), {stroke: SCALEGRID});
+    thin(g, x0 - 5, Y(z), x0, Y(z), {stroke: INK});
+    small(g, x0 - 9, Y(z) + 4, z.toFixed(0), {'text-anchor': 'end', fill: MID});
+  }
+  line(g, x0, Y(lo), x0, Y(hi));
+  upright(g, x0 - 48, (Y(lo) + Y(hi)) / 2, 'ELEVATION (m)', {fill: MID, 'letter-spacing': '.08em'});
+}
+// the table of levels under a section, one column per station or offset
+function dataBand(g, top, x0, x1, X, rows, columns) {
+  const h = 46;
+  rows.forEach(([name], r) => {
+    thin(g, 32, top + r * h, x1, top + r * h, {stroke: INK});
+    small(g, 38, top + r * h + h / 2 + 4, name, {'text-anchor': 'start', 'font-weight': 600, 'font-size': 10.5});
+  });
+  thin(g, 32, top + rows.length * h, x1, top + rows.length * h, {stroke: INK});
+  for (const x of [32, x0, x1]) thin(g, x, top, x, top + rows.length * h, {stroke: INK});
+  columns.forEach(c => {
+    const x = X(c);
+    thin(g, x, top - 6, x, top, {stroke: INK});
+    rows.forEach(([, value], r) => upright(g, x + 4, top + r * h + h / 2, value(c)));
+  });
+}
+// columns in order of importance, dropping any closer than `gap` to one already kept
+function spaced(wanted, gap) {
+  const kept = [];
+  for (const v of wanted) if (kept.every(u => Math.abs(u - v) >= gap)) kept.push(v);
+  return kept.sort((a, b) => a - b);
+}
+function titleBlock(g, y, title, scale, number) {
+  const x = 32, w = W - 64, cells = [[x, 300], [x + 300, 220], [x + 520, 180], [x + 700, w - 700]];
+  rect(g, x, y, w, 52, {fill: 'none', stroke: INK, 'stroke-width': 1.4});
+  for (const [cx] of cells.slice(1)) line(g, cx, y, cx, y + 52);
+  const put = (i, label, value, bold) => {
+    small(g, cells[i][0] + 8, y + 15, label, {'text-anchor': 'start', fill: MID, 'font-size': 9.5, 'letter-spacing': '.08em'});
+    small(g, cells[i][0] + 8, y + 37, value, {'text-anchor': 'start', 'font-size': bold ? 13.5 : 12.5, 'font-weight': bold ? 700 : 400});
+  };
+  put(0, 'DRAWING', title, true);
+  put(1, 'LOCATION', `Hwy ${D.hwy}, segment ${D.segment}, sta ${chain(D.station)}`);
+  put(2, 'SCALE', scale);
+  put(3, 'No.  /  STATUS', `${number}, not for construction`);
+}
+function noteLines(g, x, y, notes) {
+  ['NOTES', ...notes.map((n, i) => `${i + 1}. ${n}`)].forEach((n, i) =>
+    small(g, x, y + i * 17, n, {'text-anchor': 'start', 'font-weight': i ? 400 : 700, 'font-size': i ? 11 : 11.5}));
+}
+
+// ---- 3. Cross-section across the road --------------------------------------------------------
+function crossSection() {
+  const ground = x => interp(D.across, x);
+  const inner = under() ? D.deckWidth : D.span;
+  const outer = centres[centres.length - 1] + inner / 2;
+  // the new surface: embankments beside each bridge, or the fill over and beside the arches
+  const design = under()
+    ? x => Math.max(...centres.map(c => roadTop - Math.max(0, Math.abs(x - c) - D.deckWidth / 2) / D.sideSlope))
+    : x => Math.abs(x) <= outer ? structTop : structTop - (Math.abs(x) - outer) / D.run;
+  // each side slope stops where it first meets the ground (further out, lower ground is left as it is)
+  const toe = side => {
+    let x = side * outer;
+    while (Math.abs(x) < 100 && design(x) > ground(x)) x += side * .25;
+    return x;
+  };
+  const [toeLeft, toeRight] = [toe(-1), toe(1)];
+  const filledAt = x => x >= toeLeft && x <= toeRight && design(x) > ground(x);
+  const finished = x => filledAt(x) ? design(x) : ground(x);
+  const reach = Math.max(outer, -toeLeft, toeRight);
+  const half = clamp(Math.ceil((reach + 10) / 4) * 4, 56, 100);
+  const x0 = 120, x1 = W - 32, k = (x1 - x0) / (2 * half);
+  const xs = range(-half, half, .25);
+  const lo = Math.floor(Math.min(under() ? roadTop : D.road, ...xs.map(ground))) - (under() ? 2 : 4);
+  const hi = Math.ceil(Math.max(structTop + 5, ...xs.map(x => ground(x) + 2)));
+  const EX = exaggerate([2, 1], hi - lo, k, 430), ky = k * EX;
+  const X = m => (x0 + x1) / 2 + m * k, Y = z => 130 + (hi - z) * ky;
+  const ny = Y(lo) + 214, H = ny + 202, svg = sheet(H, 'cross');
+  elevationScale(svg, x0, x1, Y, lo, hi, ky);
+  const g = xs.map(x => [X(x), Y(ground(x))]);
+  poly(svg, [[X(-half), Y(lo)], ...g, [X(half), Y(lo)]], {fill: svg.pat('earth')});
+  // fill drawn in each unbroken stretch where the new surface stands above the ground
+  const stretches = [[]];
+  for (const x of xs) {
+    if (filledAt(x)) stretches[stretches.length - 1].push(x);
+    else if (stretches[stretches.length - 1].length) stretches.push([]);
+  }
+  for (const s of stretches.filter(s => s.length > 1)) {
+    const upper = s.map(x => [X(x), Y(design(x))]);
+    const area = [...upper, ...s.slice().reverse().map(x => [X(x), Y(ground(x))])];
+    poly(svg, area, {fill: WHITE});
+    poly(svg, area, {fill: svg.pat('fill'), opacity: .6});
+    path(svg, upper, {stroke: INK, 'stroke-width': 1.8, 'stroke-linejoin': 'round'});
+  }
+  path(svg, g, {stroke: INK, 'stroke-width': 1.1, 'stroke-dasharray': '8 4'});
+  if (!under()) for (const c of centres) {
+    poly(svg, archPoints(c, D.road, X, Y), {fill: WHITE, stroke: ACC, 'stroke-width': 4});
+    poly(svg, archPoints(c, D.road, X, Y), {fill: 'none', stroke: INK, 'stroke-width': 1});
+    rect(svg, X(c - D.deckWidth / 2), Y(D.road), D.deckWidth * k, 4, {fill: ASPHALT});
+  }
+  // carriageway centrelines
+  centres.forEach((c, i) => {
+    line(svg, X(c), 78, X(c), Y(lo) - 4, {stroke: ACC, 'stroke-width': .9, 'stroke-dasharray': '14 4 3 4'});
+    small(svg, X(c), 72, D.divided ? `CL CARRIAGEWAY ${i + 1}` : 'CL ROAD', {fill: ACC, 'font-weight': 600});
+  });
+  const extension = (x, a, b) => thin(svg, x, a, x, b, {stroke: MID});
+  const slope = (face, side, run) => {
+    const clear = D.divided ? 4 : Math.max(4, 70 / k - D.deckWidth / 2);
+    const a = face + side * clear, b = a + side * 6;
+    if (Math.abs(b) > half - 3 || design(a) <= ground(a) || design(b) <= ground(b) || (D.divided && Math.abs(b) < 1)) return;
+    const pa = [X(a), Y(design(a)) - 7], pb = [X(b), Y(design(b)) - 7];
+    poly(svg, [pa, pb, [pb[0], pa[1]]], {fill: 'none', stroke: INK, 'stroke-width': .8});
+    small(svg, (pa[0] + pb[0]) / 2, pa[1] - 4, `${run}H`);
+    small(svg, pb[0] + side * 11, (pa[1] + pb[1]) / 2 + 4, '1V');
+  };
+  const first = centres[0], last = centres[centres.length - 1];
+  let columns, rows, notes;
+  if (under()) {
+    centres.forEach((c, i) => {
+      const a = X(c - D.deckWidth / 2), b = X(c + D.deckWidth / 2), y = Y(roadTop);
+      const ha = Math.max(3.5, D.asphalt * ky), hb = Math.max(6, D.base * ky);
+      rect(svg, a, y, b - a, ha, {fill: ASPHALT});
+      rect(svg, a, y + ha, b - a, hb, {fill: svg.pat('concrete'), stroke: INK, 'stroke-width': .8});
+      const wy = y - (D.divided ? 30 : 46);
+      dim(svg, a, wy, b, wy, D.deckWidth.toFixed(2), {dx: D.divided ? (i ? 22 : -22) : 30});
+      for (const x of [a, b]) extension(x, wy - 6, y - 2);
+      const left = D.divided && !i;
+      level(svg, X(c + (left ? -1.8 : 1.8)), y, `FG ${roadTop.toFixed(2)}`, {left});
+      for (const side of [-1, 1]) slope(c + side * D.deckWidth / 2, side, D.sideSlope);
+    });
+    if (D.divided) {
+      dim(svg, X(first + D.deckWidth / 2), Y(roadTop) - 30, X(last - D.deckWidth / 2), Y(roadTop) - 30, `${D.median.toFixed(2)} median (assumed)`);
+      dim(svg, X(first), Y(roadTop) - 56, X(last), Y(roadTop) - 56, `${(last - first).toFixed(2)} between centrelines`);
+    }
+    const fx = first + 3.2;
+    if (roadTop - ground(fx) > .3) dim(svg, X(fx), Y(roadTop), X(fx), Y(ground(fx)), `${(roadTop - ground(fx)).toFixed(2)} fill`);
+    const egX = D.divided ? 0 : -3.2;
+    level(svg, X(egX), Y(ground(egX)), `EG ${ground(egX).toFixed(2)}`, {left: !D.divided});
+    callout(svg, X(last + 2), Y((roadTop + ground(last)) / 2), X(last + 8), Y(lo) - 16, 'Compacted borrow fill');
+    const wanted = [];
+    for (const c of centres) wanted.push(c, c - D.deckWidth / 2, c + D.deckWidth / 2);
+    wanted.push(0, ...[-.9, .9, -.72, .72, -.5, .5].map(f => Math.round(f * half)), -7.5, 7.5);
+    columns = spaced(wanted, 19 / k);
+    rows = [['OFFSET (m)', o => o.toFixed(1)], ['EXISTING', o => ground(o).toFixed(2)], ['FINISHED', o => finished(o).toFixed(2)], ['FILL (m)', o => (finished(o) - ground(o)).toFixed(2)]];
+    let area = 0;
+    for (const x of xs) area += (finished(x) - ground(x)) * .25;
+    notes = ['Section beside the bridge, where the fill is highest. Looking along the road.',
+      `Side slopes ${D.sideSlope}H:1V. Elevations in metres. Existing ground from the 30 m surface model.`,
+      `Fill area shown in this section: ${whole(area)} m². Whole job (all ramps, as costed): ${whole(D.fill)} m³.`,
+      `The cost uses a raise of ${D.raise.toFixed(2)} m, measured from the ground at the segment line (offset 0).`,
+      'Crossfall, drainage, shoulders and foundations are not designed.'];
+    small(svg, 32, ny + 14, 'PAVEMENT DETAIL', {'text-anchor': 'start', 'font-weight': 700, 'font-size': 11.5});
+    let y = ny + 24;
+    for (const [t, fill, label] of [[D.asphalt, ASPHALT, `${Math.round(D.asphalt * 1000)} mm asphalt concrete pavement, Mix H2`], [D.base, svg.pat('concrete'), `${Math.round(D.base * 1000)} mm granular base course, Des. 2 Cl. 25`], [.25, svg.pat('fill'), 'compacted borrow fill']]) {
+      const h = t * 100;
+      rect(svg, 32, y, 110, h, {fill, stroke: INK, 'stroke-width': 1});
+      callout(svg, 136, y + h / 2, 166, y + h / 2, label);
+      y += h;
+    }
+    noteLines(svg, 482, ny + 14, notes);
+  } else {
+    if (D.divided) {
+      dim(svg, X(first + D.span / 2), Y(structTop) - 30, X(last - D.span / 2), Y(structTop) - 30, `${D.median.toFixed(2)} median (assumed)`);
+    }
+    dim(svg, X(-outer), Y(structTop) - 56, X(outer), Y(structTop) - 56, `${(2 * outer).toFixed(2)} over the arches`);
+    for (const x of [-outer, outer]) extension(X(x), Y(structTop) - 62, Y(structTop) - 2);
+    for (const c of centres) {
+      for (const x of [c - D.span / 2, c + D.span / 2]) extension(X(x), Y(D.road) + 6, Y(D.road) + 36);
+      dim(svg, X(c - D.span / 2), Y(D.road) + 30, X(c + D.span / 2), Y(D.road) + 30, `${D.span.toFixed(2)} span`);
+    }
+    dim(svg, X(first + 2.6), Y(D.road + D.rise), X(first + 2.6), Y(D.road), `${D.rise.toFixed(2)} rise`);
+    dim(svg, X(last - 3), Y(structTop), X(last - 3), Y(D.road + D.rise), `${D.cover.toFixed(2)} cover`, {left: true});
+    level(svg, X(D.divided ? 0 : outer - 3), Y(structTop), `TOP ${structTop.toFixed(2)}`);
+    level(svg, X(last + 2.4), Y(D.road), `RD ${D.road.toFixed(2)}`);
+    for (const side of [-1, 1]) slope(side * outer, side, D.run);
+    const out = outer + 6;
+    if (design(out) > ground(out)) callout(svg, X(out), Y((design(out) + ground(out)) / 2), X(out + 6), Y(lo) - 16, 'Compacted borrow fill');
+    const wanted = [];
+    for (const c of centres) wanted.push(c - D.span / 2, c + D.span / 2, c);
+    wanted.push(0, ...[-.92, .92, -.76, .76, -.62, .62].map(f => Math.round(f * half)));
+    columns = spaced(wanted, 19 / k);
+    const inArch = o => centres.some(c => Math.abs(o - c) < D.span / 2 - .01);
+    rows = [['OFFSET (m)', o => o.toFixed(1)], ['EXISTING', o => ground(o).toFixed(2)], ['FINISHED', o => finished(o).toFixed(2)], ['FILL (m)', o => inArch(o) ? 'arch' : (finished(o) - ground(o)).toFixed(2)]];
+    notes = ['Section at the crossing, looking along the road. Existing ground from the 30 m surface model.',
+      `Approach slopes ${D.run}H:1V. Elevations in metres. The arches stand on the road level at the segment line.`,
+      `Fill as costed: ${whole(D.fill)} m³, for both approaches and ${m1(D.cover)} of soil on top.`,
+      ...(D.divided ? [`Not in the cost: fill between the arches, roughly ${whole(D.median * D.rise * D.opening)} m³ more.`] : []),
+      'Arch wall thickness, headwalls, drainage and foundations are not designed.'];
+    noteLines(svg, 32, ny + 14, notes);
+  }
+  const egAt = -half + 5;
+  callout(svg, X(egAt), Y(ground(egAt)), X(egAt + 4), Y(lo) - 16, 'Existing ground (30 m model)');
+  dataBand(svg, Y(lo) + 10, x0, x1, X, rows, columns);
+  heading(svg, under() ? 'Cross-section, beside the bridge' : 'Cross-section, through the arches', scaleNote(EX));
+  titleBlock(svg, H - 68, 'Typical cross-section', `${EX === 1 ? 'true scale' : `V.E. ${EX}×`}, dimensions in m`, 'CS-01');
+  return svg;
+}
+
+// ---- 4. Elevation section along the road -------------------------------------------------------
+function longSection() {
+  const st = D.station, half = D.opening / 2, ramp = rampLength(), view = viewWindow(), d0 = view.a, d1 = view.b;
+  const x0 = 120, x1 = W - 46, k = (x1 - x0) / (d1 - d0);
+  const ground = c => interp(D.along, c);
+  const design = c => ground(c) + lift(c);
+  const low = Math.min(under() ? floorLevel : D.road, ...view.levels), high = Math.max(structTop, ...view.levels);
+  const EX = exaggerate(under() ? [5, 4, 3, 2, 1.5, 1] : [2, 1.5, 1], high - low, k, 250), ky = k * EX;
+  // room under the ground for the ramp lengths, and a little above the highest point
+  const lo = Math.floor(low - Math.max(3, 62 / ky)), hi = Math.ceil(high + Math.max(2, 24 / ky));
+  const X = c => x0 + (c - d0) * k, Y = z => 140 + (hi - z) * ky;
+  const ny = Y(lo) + 214, H = ny + 150, svg = sheet(H, 'long');
+  elevationScale(svg, x0, x1, Y, lo, hi, ky);
+  const cs = range(d0, d1, Math.min(2.5, (d1 - d0) / 200));
+  const g = cs.map(c => [X(c), Y(ground(c))]);
+  poly(svg, [[X(d0), Y(lo)], ...g, [X(d1), Y(lo)]], {fill: svg.pat('earth')});
+  const raised = cs.filter(c => lift(c) > 0);
+  if (raised.length > 1) {
+    const area = [...raised.map(c => [X(c), Y(design(c))]), ...raised.slice().reverse().map(c => [X(c), Y(ground(c))])];
+    poly(svg, area, {fill: WHITE});
+    poly(svg, area, {fill: svg.pat('fill'), opacity: .6});
+  }
+  path(svg, g, {stroke: INK, 'stroke-width': 1.1, 'stroke-dasharray': '8 4'});
+  path(svg, cs.map(c => [X(c), Y(design(c))]), {stroke: INK, 'stroke-width': 2});
+  const xa = X(st - half), xb = X(st + half);
+  if (under()) {
+    const yt = Y(roadTop), yu = Y(roadTop - D.depth), yf = Y(floorLevel);
+    rect(svg, xa, yu, xb - xa, yf - yu, {fill: WHITE, stroke: INK, 'stroke-width': 1.4});
+    for (const x of [xa - 4, xb]) rect(svg, x, yu, 4, yf - yu + 10, {fill: svg.pat('concrete'), stroke: INK, 'stroke-width': .8});
+    rect(svg, xa - 6, yt, xb - xa + 12, yu - yt, {fill: ACC, stroke: INK, 'stroke-width': 1.2});
+  } else {
+    const yr = Y(D.road), ya = Y(D.road + D.rise), yt = Y(structTop);
+    rect(svg, xa, yt, xb - xa, ya - yt, {fill: ACCPALE});
+    rect(svg, xa, yt, xb - xa, ya - yt, {fill: svg.pat('fill'), opacity: .7, stroke: INK});
+    rect(svg, xa, ya, xb - xa, yr - ya, {fill: WHITE, stroke: INK, 'stroke-width': 1.4});
+    rect(svg, xa, ya - 2, xb - xa, 4, {fill: ACC, stroke: INK, 'stroke-width': .8});
+    for (const x of [xa - 4, xb]) rect(svg, x, yt, 4, yr - yt + 10, {fill: svg.pat('concrete'), stroke: INK, 'stroke-width': .8});
+    path(svg, g, {stroke: INK, 'stroke-width': 1.6});
+  }
+  line(svg, X(st), 74, X(st), Y(lo), {stroke: ACC, 'stroke-width': .9, 'stroke-dasharray': '14 4 3 4'});
+  small(svg, X(st), 68, `CL CROSSING  STA ${chain(st)}`, {fill: ACC, 'font-weight': 600});
+  const top = Y(structTop);
+  dim(svg, xa, top - 34, xb, top - 34, D.opening.toFixed(2));
+  for (const x of [xa, xb]) thin(svg, x, top - 40, x, top - 2, {stroke: MID});
+  // levels are listed only where something happens: the centre, the structure, the ramps and their middles
+  const reach = reachOfWorks();
+  const wanted = under()
+    ? [st, st - reach, st + reach, st - half, st + half, st - (half + reach) / 2, st + (half + reach) / 2]
+    : [st, st - half, st + half, d0, d1];
+  const columns = spaced(wanted.filter(c => c >= d0 - .01 && c <= d1 + .01), 18 / k);
+  let rows, notes;
+  if (under()) {
+    // control points where the ramps meet the existing road
+    if (D.raise > .3) for (const dir of [-1, 1]) {
+      const near = st + dir * half, end = near + dir * ramp, shown = clamp(end, d0, d1);
+      const past = Math.abs(end - shown) > 1;
+      if (!past) {
+        thin(svg, X(end), Y(design(end)), X(end), 118, {stroke: MID, 'stroke-dasharray': '2 3'});
+        el(svg, 'circle', {cx: X(end), cy: Y(design(end)), r: 3.5, fill: WHITE, stroke: INK, 'stroke-width': 1.3});
+        const tx = clamp(X(end), x0 + 70, x1 - 70);
+        small(svg, tx, 100, dir < 0 ? 'RAMP START' : 'RAMP END', {'font-weight': 600});
+        small(svg, tx, 113, `STA ${chain(Math.round(end))}  EL ${design(end).toFixed(2)}`);
+      }
+      const length = Math.abs(shown - near) * k;
+      const words = past ? 'ramp runs past segment end' : length > 215 ? `${ramp.toFixed(1)} m ramp, ${(D.grade * 100).toFixed(1)}% above existing` : `${ramp.toFixed(1)} m at ${(D.grade * 100).toFixed(1)}%`;
+      dim(svg, X(Math.min(near, shown)), Y(lo) - 20, X(Math.max(near, shown)), Y(lo) - 20, words);
+    }
+    level(svg, xa - 8, Y(roadTop), `FG ${roadTop.toFixed(2)}`, {left: true});
+    level(svg, xb + 44, Y(floorLevel), `FLOOR ${floorLevel.toFixed(2)}`);
+    thin(svg, xb, Y(floorLevel), xb + 50, Y(floorLevel), {stroke: INK});
+    if (D.raise > .3) dim(svg, X(st) - 40, Y(roadTop), X(st) - 40, Y(ground(st)), `${D.raise.toFixed(2)} raise`, {left: true});
+    rows = [['STATION', c => chain(c)], ['EXISTING', c => ground(c).toFixed(2)], ['FINISHED', c => design(c).toFixed(2)], ['FILL (m)', c => lift(c).toFixed(2)]];
+    notes = ['Elevations in metres along the segment line. Stations measured from the start of the segment.',
+      'Finished level is the existing level plus the fill the cost step assumes. It is not a designed vertical alignment (no vertical curves).',
+      `Fill ${whole(D.fill)} m³ and pavement ${whole(D.paving)} m² for ${D.structures > 1 ? 'both carriageways' : 'the road'}.`];
+  } else {
+    level(svg, xa - 8, Y(structTop), `TOP ${structTop.toFixed(2)}`, {left: true});
+    level(svg, xb + 44, Y(D.road), `RD ${D.road.toFixed(2)}`);
+    dim(svg, xa - 30, Y(D.road + D.rise), xa - 30, Y(D.road), `${D.rise.toFixed(2)} rise`, {left: true});
+    dim(svg, xb + 22, Y(structTop), xb + 22, Y(D.road + D.rise), `${D.cover.toFixed(2)} cover`);
+    const on = c => Math.abs(c - st) <= half + .01;
+    rows = [['STATION', c => chain(c)], ['ROAD LEVEL', c => ground(c).toFixed(2)], ['TOP OF PATH', c => on(c) ? structTop.toFixed(2) : ''], ['HEIGHT (m)', c => on(c) ? (structTop - ground(c)).toFixed(2) : '']];
+    notes = ['Elevations in metres along the segment line. Stations measured from the start of the segment.',
+      'The road is not changed. The arch is shown level, at the road level of the crossing point.',
+      `Fill ${whole(D.fill)} m³ for the approaches (across the road, see CS-01) and the soil on top.`];
+  }
+  const longer = (d1 - st) >= (st - d0) ? 1 : -1;
+  const at = clamp(st + longer * (reach + view.pad * .55), d0 + 20 / k, d1 - 20 / k);
+  callout(svg, X(at), Y(ground(at)), X(at) - longer * 26, Math.min(Y(ground(at)) + 78, Y(lo) - 56), 'Existing road level', {anchor: longer > 0 ? 'end' : 'start'});
+  segmentEnds(svg, X, Y, d0, d1);
+  dataBand(svg, Y(lo) + 10, x0, x1, X, rows, columns);
+  noteLines(svg, 32, ny + 14, notes);
+  heading(svg, 'Elevation section, along the road', scaleNote(EX));
+  titleBlock(svg, H - 68, 'Longitudinal elevation section', `${EX === 1 ? 'true scale' : `V.E. ${EX}×`}, elevations in m`, 'LS-01');
+  return svg;
+}
+
+// ---- summary: plain sentences ------------------------------------------------------------------
+function ordinal(n) {
+  if (n === 1) return 'first';
+  const tail = n % 100 > 10 && n % 100 < 14 ? 'th' : {1: 'st', 2: 'nd', 3: 'rd'}[n % 10] || 'th';
+  return whole(n) + tail;
+}
+// small numbers keep their decimals, so a quiet road does not read as zero
+const amount = v => v >= 10 ? whole(v) : v >= 1 ? v.toFixed(1) : v.toFixed(2);
+function paragraph(parent, html, className) {
+  const p = document.createElement('p');
+  if (className) p.className = className;
+  p.innerHTML = html;
+  parent.appendChild(p);
+  return p;
+}
+function summary() {
+  const box = document.createElement('div');
+  box.className = 'lead';
+  const n = Math.round(D.prevented);
+  const prevented = D.prevented < 1 ? 'fewer than 1 collision' : `${whole(n)} ${n === 1 ? 'collision' : 'collisions'}`;
+  const per = D.perMillion >= 10 ? whole(D.perMillion) : D.perMillion >= .1 ? D.perMillion.toFixed(1) : 'less than 0.1';
+  paragraph(box, `An ${D.kind} here would cost about <b>${money(D.cost)}</b> (${money(D.low)} to ${money(D.high)}). ` +
+    `With fencing, it would prevent ${D.prevented < 1 ? '' : 'about '}<b>${prevented}</b> over ${EFFECT_YEARS} years, ` +
+    `or <b>${per} per $1M</b>. By that measure it ranks ${ordinal(D.rank)} of ${whole(D.sites)} priced sites.`);
+  if (D.checks.length) {
+    paragraph(box, 'Check before relying on this:', 'check');
+    const list = box.appendChild(document.createElement('ul'));
+    for (const words of D.checks) {
+      const item = list.appendChild(document.createElement('li'));
+      item.textContent = words;
+      if (words.startsWith('Not credible')) item.className = 'strong';
+    }
+  }
+  return box;
+}
+
+// ---- pages --------------------------------------------------------------------------------------
+const out = () => document.getElementById('out');
+const heads = (title, sub) => {
+  document.getElementById('title').textContent = title;
+  document.getElementById('subtitle').textContent = sub;
+  document.title = title;
+};
+function save(svg, name) {
+  const blob = new Blob([new XMLSerializer().serializeToString(svg)], {type: 'image/svg+xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `segment_${D.segment}_${name}.svg`; a.click();
+  URL.revokeObjectURL(a.href);
+}
+function details() {
+  const d = document.createElement('details');
+  d.innerHTML = '<summary>More details</summary>';
+  const t = document.createElement('table');
+  const count = D.structures > 1 ? 'two' : 'one';
+  const rows = under()
+    ? [['Bridges', `${count}, ${D.structures > 1 ? 'each ' : ''}${D.opening} m long and ${D.deckWidth} m wide`], ['Bridge price', money(D.structureCost)],
+       ['Earthworks', `${whole(D.fill)} m³ of fill, ${whole(D.paving)} m² of pavement, ${money(D.earthCost)}`]]
+    : [['Arches', `${count}, ${D.structures > 1 ? 'each ' : ''}${D.span} m span, ${D.rise} m rise, ${D.opening} m wide animal path`], ['Arch price', money(D.structureCost)],
+       ['Earthworks', `${whole(D.fill)} m³ of fill, ${money(D.earthCost)}`]];
+  rows.push(['With fencing over its life', money(D.lifetime)], ['Expected records a year', `${amount(D.risk)}, or ${amount(D.riskHistory)} with past records`],
+            ['Not designed or priced', 'foundations, drainage, utilities and land']);
+  for (const [k, v] of rows) { const row = t.insertRow(); row.insertCell().textContent = k; row.insertCell().textContent = v; }
+  d.appendChild(t);
+  return d;
+}
+function drawSite(only) {
+  floorLevel = Math.max(D.left, D.right);
+  roadTop = D.road + D.raise;
+  structTop = under() ? roadTop : D.road + D.rise + D.cover;
+  const across = under() ? D.deckWidth : D.span;
+  centres = D.divided ? [-(D.median + across) / 2, (D.median + across) / 2] : [0];
+  heads(`Highway ${D.hwy}, segment ${D.segment}`, '');
+  if (!only || only === 'summary') out().appendChild(summary());
+  for (const [title, key, draw] of [['Location', 'location', location_], ['Front view', 'front', frontView], ['Cross-section', 'cross', crossSection], ['Elevation section', 'long', longSection]]) {
+    if (only && only !== key) continue;
+    const fig = document.createElement('figure');
+    const paper = document.createElement('div'); paper.className = 'paper';
+    const svg = draw();
+    svg.setAttribute('aria-label', title);
+    const b = document.createElement('button'); b.className = 'save'; b.textContent = `Download ${title.toLowerCase()}`;
+    b.onclick = () => save(svg, key);
+    const z = document.createElement('button'); z.className = 'zoomer'; z.textContent = 'Zoom in';
+    z.onclick = () => { z.textContent = fig.classList.toggle('zoom') ? 'Fit to screen' : 'Zoom in'; };
+    paper.appendChild(svg); fig.append(paper, z, b); out().appendChild(fig);
+  }
+  if (!only) out().appendChild(details());
+}
+function drawList() {
+  const search = document.createElement('div'); search.className = 'search';
+  const input = search.appendChild(document.createElement('input'));
+  input.type = 'search'; input.placeholder = 'Search by segment, code or highway';
+  input.setAttribute('aria-label', input.placeholder);
+  const status = document.createElement('p'); status.className = 'note'; status.style.marginTop = '0';
+  const box = document.createElement('div'); box.className = 'list';
+  const shortlist = COST_INDEX.sites.filter(s => s.shortlist), LIMIT = 100;
+  const show = () => {
+    const q = input.value.trim().toLowerCase();
+    const found = !q ? (shortlist.length ? shortlist : COST_INDEX.sites)
+      : COST_INDEX.sites.filter(s => String(s.segment) === q || s.code.toLowerCase().startsWith(q) || s.hwy.toLowerCase() === q);
+    status.textContent = !q && shortlist.length
+      ? `The ${shortlist.length} shortlisted sites. Search to find any of the ${whole(COST_INDEX.sites.length)} priced segments.`
+      : `${whole(found.length)} found${found.length > LIMIT ? `, the first ${LIMIT} shown` : ''}.`;
+    const t = document.createElement('table');
+    const head = t.insertRow();
+    for (const h of ['Rank by value', 'Segment', 'Highway', 'Crossing', 'Cost', `Collisions prevented, ${EFFECT_YEARS} years`, 'Per $1M']) {
+      const th = document.createElement('th'); th.textContent = h; head.appendChild(th);
+    }
+    for (const s of found.slice(0, LIMIT)) {
+      const row = t.insertRow();
+      row.insertCell().textContent = whole(s.rank);
+      const a = document.createElement('a'); a.href = `cost.html?segment=${s.segment}`; a.textContent = `${s.segment} (${s.code})`;
+      row.insertCell().appendChild(a);
+      for (const v of [s.hwy, s.kind, money(s.cost), amount(s.prevented), amount(s.perMillion)]) row.insertCell().textContent = v;
+    }
+    box.textContent = ''; box.appendChild(t);
+  };
+  input.oninput = show;
+  out().append(search, status, box);
+  show();
+}
+const loadScript = src => new Promise((ok, fail) => {
+  const s = document.createElement('script');
+  s.src = src; s.onload = ok; s.onerror = () => fail(new Error(src));
+  document.head.appendChild(s);
+});
+async function start() {
+  const query = new URLSearchParams(location.search);
+  await loadScript('cost_data/index.js');
+  const wanted = query.get('segment');
+  const site = COST_INDEX.sites.find(s => String(s.segment) === wanted);
+  if (!site) {
+    heads('Priced crossing sites', 'Ordered by collisions prevented per $1M of crossing and fencing cost.');
+    render = () => {
+      if (wanted !== null) paragraph(out(), '', 'note').textContent = `Segment ${wanted} has no cost estimate.`;
+      drawList();
+    };
+    render();
+    return;
+  }
+  const group = String(Math.floor(site.segment / COST_INDEX.group)).padStart(3, '0');
+  await Promise.all([loadScript(`cost_data/segments_${group}.js`), loadScript('cost_data/province.js')]);
+  D = COST_SEGMENTS[site.segment];
+  PROVINCE = COST_PROVINCE;
+  render = () => drawSite(query.get('only'));
+  render();
+}
+// ---- light and dark ---------------------------------------------------------------------------
+// On its own the page has a theme button (auto follows the system). Inside the risk map it takes the
+// map's theme, sent by the map, and the button and the link back to the map are hidden.
+const embedded = window.self !== window.top;
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+const THEMES = ['auto', 'light', 'dark'];
+let choice = new URLSearchParams(location.search).get('theme');
+if (!THEMES.includes(choice)) {
+  try { choice = localStorage.getItem('cost-theme'); } catch { choice = null; }
+  if (!THEMES.includes(choice)) choice = 'auto';
+}
+function applyTheme() {
+  const theme = choice === 'auto' ? (systemDark.matches ? 'dark' : 'light') : choice;
+  ({INK, MID, PALE, ACC, ACCPALE, WHITE, CONCRETE, GRID, SCALEGRID, THIN, BACK, SIDE, FLOOR, ARCH, ASPHALT} = PALETTES[theme]);
+  const changed = document.documentElement.dataset.theme !== theme;
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('theme').textContent = `Theme: ${choice}`;
+  return changed;
+}
+// redraw in the new colours without losing the place on the page
+function retheme() {
+  if (!applyTheme() || !render) return;
+  const at = window.scrollY, open = out().querySelector('details')?.open;
+  out().textContent = '';
+  render();
+  if (open) out().querySelector('details').open = true;
+  window.scrollTo(0, at);
+}
+document.getElementById('theme').onclick = () => {
+  choice = THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length];
+  try { localStorage.setItem('cost-theme', choice); } catch {}
+  retheme();
+};
+systemDark.addEventListener('change', retheme);
+applyTheme();
+if (embedded) {
+  document.getElementById('maplink').hidden = true;
+  document.getElementById('theme').hidden = true;
+  addEventListener('message', e => {
+    if (e.source !== window.parent || !['light', 'dark'].includes(e.data?.theme)) return;
+    choice = e.data.theme;
+    retheme();
+  });
+  window.parent.postMessage({costReady: true}, '*');
+}
+start().catch(error => {
+  console.error(error);
+  heads('The drawings could not be loaded', 'Run src/cost/19-drawing_data.py to write the files in docs/cost_data, then reload.');
+});
+</script>
+</body>
+</html>
